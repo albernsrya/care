@@ -69,7 +69,8 @@ class TestSuperUser(TestBase):
         data = self.user_data.copy()
         data.pop("password")
         self.assertDictEqual(
-            res_data_json, self.get_detail_representation(self.user),
+            res_data_json,
+            self.get_detail_representation(self.user),
         )
 
     def test_superuser_can_modify(self):
@@ -81,7 +82,13 @@ class TestSuperUser(TestBase):
         data["district"] = data["district"].id
         data["state"] = data["state"].id
 
-        response = self.client.put(f"/api/v1/users/{username}/", {**data, "age": 31, "password": password},)
+        response = self.client.put(
+            f"/api/v1/users/{username}/",
+            {
+                **data, "age": 31,
+                "password": password
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # test the value from api
@@ -147,7 +154,8 @@ class TestUser(TestBase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         res_data_json = response.json()
         # test total user count
-        self.assertEqual(res_data_json["count"], 3)  # 2 existing, plus the new one
+        self.assertEqual(res_data_json["count"],
+                         3)  # 2 existing, plus the new one
         results = res_data_json["results"]
         # test presence of usernames
         self.assertIn(self.user.id, {r["id"] for r in results})
@@ -157,7 +165,13 @@ class TestUser(TestBase):
         """Test user can modify the attributes for themselves"""
         password = "new_password"
         username = self.user.username
-        response = self.client.patch(f"/api/v1/users/{username}/", {"age": 31, "password": password,},)
+        response = self.client.patch(
+            f"/api/v1/users/{username}/",
+            {
+                "age": 31,
+                "password": password,
+            },
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # test the value from api
         self.assertEqual(response.json()["age"], 31)
@@ -174,7 +188,13 @@ class TestUser(TestBase):
         """Test a user can't modify others"""
         username = self.data_2["username"]
         password = self.data_2["password"]
-        response = self.client.patch(f"/api/v1/users/{username}/", {"age": 31, "password": password,},)
+        response = self.client.patch(
+            f"/api/v1/users/{username}/",
+            {
+                "age": 31,
+                "password": password,
+            },
+        )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_user_cannot_delete_others(self):
@@ -185,5 +205,6 @@ class TestUser(TestBase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         # test backend response(user_2 still exists)
         self.assertEqual(
-            self.data_2[field], User.objects.get(username=self.data_2[field]).username,
+            self.data_2[field],
+            User.objects.get(username=self.data_2[field]).username,
         )

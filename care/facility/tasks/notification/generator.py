@@ -8,10 +8,8 @@
 # from care.users.models import User
 # from care.utils.sms.sendSMS import sendSMS
 
-
 # def generate_sms_for_user(phone_numbers, message):
 #     sendSMS(phone_numbers, message, many=True)
-
 
 # @celery.task()
 # def generate_notifications_for_facility(facility_id, data, defer_notifications):
@@ -40,7 +38,6 @@
 #     #         pass
 #     #         # Delay task to send notifications
 
-
 # def send_webpush_user(user, message):
 #     try:
 #         if user.pf_endpoint and user.pf_p256dh and user.pf_auth:
@@ -60,7 +57,6 @@
 #             print(
 #                 "Remote service replied with a {}:{}, {}", extra.code, extra.errno, extra.message,
 #             )
-
 
 # def generate_message_for_user(user, data):
 #     data["intended_for_id"] = user.id

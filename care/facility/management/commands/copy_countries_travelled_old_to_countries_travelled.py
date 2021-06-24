@@ -13,10 +13,12 @@ class Command(BaseCommand):
 
     @staticmethod
     def copy_countries_travelled_old():
-        patients = PatientRegistration.objects.filter(countries_travelled__isnull=True)
+        patients = PatientRegistration.objects.filter(
+            countries_travelled__isnull=True)
         for patient in patients:
             if patient.countries_travelled_old:
-                patient.countries_travelled = patient.countries_travelled_old.split(",")
+                patient.countries_travelled = patient.countries_travelled_old.split(
+                    ",")
             else:
                 patient.countries_travelled = []
             patient.save()

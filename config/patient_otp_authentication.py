@@ -43,13 +43,18 @@ class CustomJWTAuthentication(JWTAuthentication):
         try:
             return PatientToken(raw_token)
         except TokenError as e:
-            messages.append(
-                {"token_class": PatientToken.__name__, "token_type": PatientToken.token_type, "message": e.args[0]}
-            )
+            messages.append({
+                "token_class": PatientToken.__name__,
+                "token_type": PatientToken.token_type,
+                "message": e.args[0],
+            })
 
-        raise InvalidToken(
-            {"detail": _("Given token not valid for any token type"), "messages": messages,}
-        )
+        raise InvalidToken({
+            "detail":
+            _("Given token not valid for any token type"),
+            "messages":
+            messages,
+        })
 
 
 class JWTTokenPatientAuthentication(CustomJWTAuthentication):

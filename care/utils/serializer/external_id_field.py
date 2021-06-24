@@ -35,5 +35,6 @@ class ExternalIdSerializerField(serializers.Field):
             try:
                 value = self.queryset.get(external_id=value)
             except ObjectDoesNotExist:
-                raise serializers.ValidationError("object with this id not found")
+                raise serializers.ValidationError(
+                    "object with this id not found")
         return value

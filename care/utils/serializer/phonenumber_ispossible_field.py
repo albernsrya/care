@@ -15,6 +15,7 @@ class PhoneNumberIsPossibleField(serializers.CharField):
         if phone_number and not phonenumbers.is_possible_number(phone_number):
             # attempting to check if this is a possible Indian number
             phone_number = to_python(data, region="IN")
-            if phone_number and not phonenumbers.is_possible_number(phone_number):
+            if phone_number and not phonenumbers.is_possible_number(
+                    phone_number):
                 raise ValidationError(self.error_messages["invalid"])
         return phone_number

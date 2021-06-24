@@ -1,7 +1,7 @@
 from django.db import models
 
 from care.facility.models import FacilityBaseModel, PatientRegistration, pretty_boolean
-from care.users.models import User, Ward, LocalBody, District
+from care.users.models import District, LocalBody, User, Ward
 
 
 class PatientExternalTest(FacilityBaseModel):
@@ -14,13 +14,18 @@ class PatientExternalTest(FacilityBaseModel):
     mobile_number = models.CharField(max_length=15)
     is_repeat = models.BooleanField()
     patient_status = models.CharField(max_length=15)
-    ward = models.ForeignKey(Ward, on_delete=models.PROTECT, null=True, blank=True)
-    local_body = models.ForeignKey(
-        LocalBody, on_delete=models.PROTECT, null=False, blank=False
-    )
-    district = models.ForeignKey(
-        District, on_delete=models.PROTECT, null=False, blank=False
-    )
+    ward = models.ForeignKey(Ward,
+                             on_delete=models.PROTECT,
+                             null=True,
+                             blank=True)
+    local_body = models.ForeignKey(LocalBody,
+                                   on_delete=models.PROTECT,
+                                   null=False,
+                                   blank=False)
+    district = models.ForeignKey(District,
+                                 on_delete=models.PROTECT,
+                                 null=False,
+                                 blank=False)
     source = models.CharField(max_length=255, blank=True, null=True)
     patient_category = models.CharField(max_length=255, blank=True, null=True)
     lab_name = models.CharField(max_length=255)
@@ -80,4 +85,3 @@ class PatientExternalTest(FacilityBaseModel):
         "source": "Source"
         # "result_date": "",
     }
-

@@ -7,4 +7,5 @@ class Operation(Enum):
     DELETE = "delete"
 
 
-DjangoOperations = [(e.value, o.lower()) for o, e in Operation.__members__.items()]
+DjangoOperations = [(e.value, o.lower())
+                    for o, e in Operation.__members__.items()]

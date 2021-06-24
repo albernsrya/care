@@ -12,7 +12,6 @@ from config.tests.helper import mock_equal
 
 class TestFacility(TestBase):
     """Test Facility APIs"""
-
     @classmethod
     def setUpClass(cls) -> None:
         super(TestFacility, cls).setUpClass()
@@ -21,7 +20,10 @@ class TestFacility(TestBase):
             "district": cls.district.id,
             "facility_type": 1,
             "address": f"Address {datetime.datetime.now().timestamp}",
-            "location": {"latitude": 49.878248, "longitude": 24.452545},
+            "location": {
+                "latitude": 49.878248,
+                "longitude": 24.452545
+            },
             "pincode": 123456,
             "oxygen_capacity": 10,
             "phone_number": "9998887776",
@@ -36,7 +38,10 @@ class TestFacility(TestBase):
             "name": facility.name,
             "facility_type": "Educational Inst",
             "address": facility.address,
-            "location": {"latitude": facility.location.tuple[1], "longitude": facility.location.tuple[0],},
+            "location": {
+                "latitude": facility.location.tuple[1],
+                "longitude": facility.location.tuple[0],
+            },
             "pincode": facility.pincode,
             "local_body": None,
             "local_body_object": None,
@@ -47,7 +52,10 @@ class TestFacility(TestBase):
                 "state": facility.district.state.id,
             },
             "state": facility.district.state.id,
-            "state_object": {"id": facility.district.state.id, "name": facility.district.state.name,},
+            "state_object": {
+                "id": facility.district.state.id,
+                "name": facility.district.state.name,
+            },
             "oxygen_capacity": facility.oxygen_capacity,
             "phone_number": facility.phone_number,
         }
@@ -57,14 +65,19 @@ class TestFacility(TestBase):
             location = facility.pop("location", {})
             district_id = facility.pop("district")
             facility = Facility(
-                **facility, district_id=district_id, location=Point(location["longitude"], location["latitude"]),
+                **facility,
+                district_id=district_id,
+                location=Point(location["longitude"], location["latitude"]),
             )
         return {
             "id": str(facility.external_id),
             "name": facility.name,
             "facility_type": "Educational Inst",
             "address": facility.address,
-            "location": {"latitude": facility.location.tuple[1], "longitude": facility.location.tuple[0],},
+            "location": {
+                "latitude": facility.location.tuple[1],
+                "longitude": facility.location.tuple[0],
+            },
             "pincode": facility.pincode,
             "local_body": None,
             "local_body_object": None,
@@ -75,7 +88,10 @@ class TestFacility(TestBase):
                 "state": facility.district.state.id,
             },
             "state": facility.district.state.id,
-            "state_object": {"id": facility.district.state.id, "name": facility.district.state.name,},
+            "state_object": {
+                "id": facility.district.state.id,
+                "name": facility.district.state.name,
+            },
             "oxygen_capacity": facility.oxygen_capacity,
             "phone_number": facility.phone_number,
             "created_date": mock_equal,
@@ -90,7 +106,9 @@ class TestFacility(TestBase):
             - verify inserted values
         """
         facility_data = self.facility_data
-        response = self.client.post(self.get_url(), facility_data, format="json")
+        response = self.client.post(self.get_url(),
+                                    facility_data,
+                                    format="json")
 
         # test status code
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -106,7 +124,8 @@ class TestFacility(TestBase):
         )
 
         # Facility exists
-        facility = Facility.objects.filter(address=facility_data["address"], created_by=self.user).first()
+        facility = Facility.objects.filter(address=facility_data["address"],
+                                           created_by=self.user).first()
         self.assertIsNotNone(facility)
         self.assertEqual(response.json()["id"], str(facility.external_id))
 
@@ -124,11 +143,17 @@ class TestFacility(TestBase):
         facility = self.facility
         facility.created_by = self.user
         facility.save()
-        response = self.client.get(self.get_url(str(facility.external_id)), format="json", redirect="follow")
+        response = self.client.get(self.get_url(str(facility.external_id)),
+                                   format="json",
+                                   redirect="follow")
 
         self.assertDictEqual(
             response.data,
-            {**self.get_list_representation(facility), "modified_date": mock_equal, "created_date": mock_equal,},
+            {
+                **self.get_list_representation(facility),
+                "modified_date": mock_equal,
+                "created_date": mock_equal,
+            },
         )
 
     def test_facility_update(self):
@@ -153,10 +178,17 @@ class TestFacility(TestBase):
 
         expected_response = self.get_detail_representation(facility)
         expected_response["name"] = "Another name"
-        expected_response.update(self.get_district_representation(new_district))
-        expected_response.update(self.get_state_representation(new_district.state))
+        expected_response.update(
+            self.get_district_representation(new_district))
+        expected_response.update(
+            self.get_state_representation(new_district.state))
         self.assertDictEqual(
-            response.json(), {**expected_response, "modified_date": mock_equal, "created_date": mock_equal,},
+            response.json(),
+            {
+                **expected_response,
+                "modified_date": mock_equal,
+                "created_date": mock_equal,
+            },
         )
 
         facility.refresh_from_db()
@@ -170,7 +202,9 @@ class TestFacility(TestBase):
         original_creator = facility.created_by
 
         self.client.force_login(self.super_user)
-        response = self.client.put(self.get_url(str(facility.external_id)), self.facility_data, format="json")
+        response = self.client.put(self.get_url(str(facility.external_id)),
+                                   self.facility_data,
+                                   format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         facility.refresh_from_db()
         self.assertEqual(facility.created_by, original_creator)
@@ -222,12 +256,18 @@ class TestFacility(TestBase):
         self.assertDictEqual(
             response.json(),
             {
-                "count": 1,
-                "next": None,
-                "previous": None,
-                "results": [
-                    {**self.get_list_representation(facility), "modified_date": mock_equal, "created_date": mock_equal,}
-                ],
+                "count":
+                1,
+                "next":
+                None,
+                "previous":
+                None,
+                "results":
+                [{
+                    **self.get_list_representation(facility),
+                    "modified_date": mock_equal,
+                    "created_date": mock_equal,
+                }],
             },
         )
 
@@ -256,15 +296,25 @@ class TestFacilityBulkUpdate(TestBase):
             location = facility.pop("location", {})
             district_id = facility.pop("district")
             facility = Facility(
-                **facility, district_id=district_id, location=Point(location["longitude"], location["latitude"]),
+                **facility,
+                district_id=district_id,
+                location=Point(location["longitude"], location["latitude"]),
             )
 
         return {
-            "name": facility.name,
-            "district": facility.district.id,
-            "facility_type": 3,
-            "address": facility.address,
-            "capacity": [{"room_type": 1, "total_capacity": 100, "current_capacity": 48}],
+            "name":
+            facility.name,
+            "district":
+            facility.district.id,
+            "facility_type":
+            3,
+            "address":
+            facility.address,
+            "capacity": [{
+                "room_type": 1,
+                "total_capacity": 100,
+                "current_capacity": 48
+            }],
         }
 
     def get_detail_representation(self):
@@ -291,21 +341,42 @@ class TestFacilityBulkUpdate(TestBase):
             self.get_url(),
             data=[
                 {
-                    "name": facility.name,
-                    "district": facility.district.id,
-                    "facility_type": 3,
-                    "address": facility.address,
-                    "capacity": [{"room_type": 1, "total_capacity": 100, "current_capacity": 48,}],
+                    "name":
+                    facility.name,
+                    "district":
+                    facility.district.id,
+                    "facility_type":
+                    3,
+                    "address":
+                    facility.address,
+                    "capacity": [{
+                        "room_type": 1,
+                        "total_capacity": 100,
+                        "current_capacity": 48,
+                    }],
                 },
                 {
-                    "name": name,
-                    "district": facility.district.id,
-                    "facility_type": 2,
-                    "address": address,
-                    "phone_number": phone_number,
+                    "name":
+                    name,
+                    "district":
+                    facility.district.id,
+                    "facility_type":
+                    2,
+                    "address":
+                    address,
+                    "phone_number":
+                    phone_number,
                     "capacity": [
-                        {"room_type": 0, "total_capacity": 350, "current_capacity": 150,},
-                        {"room_type": 1, "total_capacity": 200, "current_capacity": 100,},
+                        {
+                            "room_type": 0,
+                            "total_capacity": 350,
+                            "current_capacity": 150,
+                        },
+                        {
+                            "room_type": 1,
+                            "total_capacity": 200,
+                            "current_capacity": 100,
+                        },
                     ],
                 },
             ],
@@ -325,9 +396,10 @@ class TestFacilityBulkUpdate(TestBase):
         user.is_superuser = True
         user.save()
 
-        capacity = FacilityCapacity.objects.create(
-            facility=facility, room_type=1, total_capacity=50, current_capacity=0
-        )
+        capacity = FacilityCapacity.objects.create(facility=facility,
+                                                   room_type=1,
+                                                   total_capacity=50,
+                                                   current_capacity=0)
         facility.created_by = self.user
         facility.save()
 
@@ -338,21 +410,42 @@ class TestFacilityBulkUpdate(TestBase):
             self.get_url(),
             data=[
                 {
-                    "name": facility.name,
-                    "district": facility.district.id,
-                    "facility_type": 3,
-                    "address": facility.address,
-                    "capacity": [{"room_type": 1, "total_capacity": 100, "current_capacity": 48,}],
+                    "name":
+                    facility.name,
+                    "district":
+                    facility.district.id,
+                    "facility_type":
+                    3,
+                    "address":
+                    facility.address,
+                    "capacity": [{
+                        "room_type": 1,
+                        "total_capacity": 100,
+                        "current_capacity": 48,
+                    }],
                 },
                 {
-                    "name": name,
-                    "district": facility.district.id,
-                    "facility_type": 2,
-                    "address": address,
-                    "phone_number": phone_number,
+                    "name":
+                    name,
+                    "district":
+                    facility.district.id,
+                    "facility_type":
+                    2,
+                    "address":
+                    address,
+                    "phone_number":
+                    phone_number,
                     "capacity": [
-                        {"room_type": 0, "total_capacity": 350, "current_capacity": 150,},
-                        {"room_type": 1, "total_capacity": 200, "current_capacity": 100,},
+                        {
+                            "room_type": 0,
+                            "total_capacity": 350,
+                            "current_capacity": 150,
+                        },
+                        {
+                            "room_type": 1,
+                            "total_capacity": 200,
+                            "current_capacity": 100,
+                        },
                     ],
                 },
             ],
@@ -394,7 +487,8 @@ class TestFacilityBulkUpdate(TestBase):
         # logout the superuser, it's logged in due to the setUp function
         self.client.logout()
         test_facility = TestFacility()
-        response = self.client.get(test_facility.get_url(str(self.facility.external_id)))
+        response = self.client.get(
+            test_facility.get_url(str(self.facility.external_id)))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_super_user_can_access_url_by_location(self):
@@ -404,7 +498,8 @@ class TestFacilityBulkUpdate(TestBase):
         user.save()
 
         test_facility = TestFacility()
-        response = self.client.get(test_facility.get_url(str(self.facility.external_id)))
+        response = self.client.get(
+            test_facility.get_url(str(self.facility.external_id)))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_superuser_bulk_facility_data_retrieval(self):
@@ -416,8 +511,11 @@ class TestFacilityBulkUpdate(TestBase):
         facility = self.facility
 
         test_facility = TestFacility()
-        response = self.client.get(test_facility.get_url(str(facility.external_id)), format="json")
-        self.assertDictEqual(response.json(), test_facility.get_detail_representation(facility))
+        response = self.client.get(test_facility.get_url(
+            str(facility.external_id)),
+            format="json")
+        self.assertDictEqual(response.json(),
+                             test_facility.get_detail_representation(facility))
 
     def test_others_cant_update_ones_facility(self):
         """Test facility can't be updated by non-creators"""
@@ -427,7 +525,8 @@ class TestFacilityBulkUpdate(TestBase):
         data["username"] = "test"
         User.objects.create_user(**data)
         self.client.login(
-            username=data["username"], password=data["password"],
+            username=data["username"],
+            password=data["password"],
         )
         facility = self.facility
         data = self.user_data
@@ -436,8 +535,12 @@ class TestFacilityBulkUpdate(TestBase):
         facility.created_by = new_user
         facility.save()
         # although this should be PUT, PUT is weirdly enough not allowed here
-        response = self.client.post(self.get_url(), data=self.get_list_representation(facility),)
+        response = self.client.post(
+            self.get_url(),
+            data=self.get_list_representation(facility),
+        )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(
-            response.json()["detail"], "You do not have permission to perform this action.",
+            response.json()["detail"],
+            "You do not have permission to perform this action.",
         )

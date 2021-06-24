@@ -5,29 +5,22 @@ from django.db.models import F, Sum
 from django.utils import timezone
 from rest_framework import serializers
 
-from care.facility.models import (
-    FacilityInventoryBurnRate,
-    FacilityInventoryItem,
-    FacilityInventoryItemTag,
-    FacilityInventoryLog,
-    FacilityInventoryMinQuantity,
-    FacilityInventorySummary,
-    FacilityInventoryUnit,
-    FacilityInventoryUnitConverter,
-)
+from care.facility.models import (FacilityInventoryBurnRate, FacilityInventoryItem, FacilityInventoryItemTag,
+                                  FacilityInventoryLog, FacilityInventoryMinQuantity, FacilityInventorySummary,
+                                  FacilityInventoryUnit, FacilityInventoryUnitConverter)
 
 
 class FacilityInventoryItemTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = FacilityInventoryItemTag
-        read_only_fields = ("id",)
+        read_only_fields = ("id", )
         fields = "__all__"
 
 
 class FacilityInventoryUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = FacilityInventoryUnit
-        read_only_fields = ("id",)
+        read_only_fields = ("id", )
         fields = "__all__"
 
 
@@ -38,15 +31,17 @@ class FacilityInventoryItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FacilityInventoryItem
-        read_only_fields = ("id",)
+        read_only_fields = ("id", )
         fields = "__all__"
 
 
 class FacilityInventoryLogSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source="external_id", read_only=True)
 
-    item_object = FacilityInventoryItemSerializer(source="item", read_only=True)
-    unit_object = FacilityInventoryUnitSerializer(source="unit", read_only=True)
+    item_object = FacilityInventoryItemSerializer(source="item",
+                                                  read_only=True)
+    unit_object = FacilityInventoryUnitSerializer(source="unit",
+                                                  read_only=True)
 
     class Meta:
         model = FacilityInventoryLog
@@ -70,17 +65,18 @@ class FacilityInventoryLogSerializer(serializers.ModelSerializer):
         try:
             item.allowed_units.get(id=unit.id)
         except:
-            raise serializers.ValidationError({"unit": [f"Item cannot be measured with unit"]})
+            raise serializers.ValidationError(
+                {"unit": [f"Item cannot be measured with unit"]})
 
         multiplier = 1
 
         try:
             if item.default_unit != unit:
                 multiplier = FacilityInventoryUnitConverter.objects.get(
-                    from_unit=unit, to_unit=item.default_unit
-                ).multiplier
+                    from_unit=unit, to_unit=item.default_unit).multiplier
         except:
-            raise serializers.ValidationError({"item": [f"Please Ask Admin to Add Conversion Metrics"]})
+            raise serializers.ValidationError(
+                {"item": [f"Please Ask Admin to Add Conversion Metrics"]})
 
         validated_data["created_by"] = self.context["request"].user
 
@@ -92,19 +88,26 @@ class FacilityInventoryLogSerializer(serializers.ModelSerializer):
         current_quantity = multiplier * validated_data["quantity"]
         validated_data["quantity_in_default_unit"] = abs(current_quantity)
         try:
-            summary_obj = FacilityInventorySummary.objects.get(facility=facility, item=item)
-            current_quantity = summary_obj.quantity + (multiplier * validated_data["quantity"])
-            summary_obj.quantity = F("quantity") + (multiplier * validated_data["quantity"])
+            summary_obj = FacilityInventorySummary.objects.get(
+                facility=facility, item=item)
+            current_quantity = summary_obj.quantity + (
+                multiplier * validated_data["quantity"])
+            summary_obj.quantity = F("quantity") + (multiplier *
+                                                    validated_data["quantity"])
         except:
             summary_obj = FacilityInventorySummary(
-                facility=facility, item=item, quantity=multiplier * validated_data["quantity"]
+                facility=facility,
+                item=item,
+                quantity=multiplier * validated_data["quantity"],
             )
 
         if current_quantity < 0:
-            raise serializers.ValidationError({"stock": [f"Stock not Available"]})
+            raise serializers.ValidationError(
+                {"stock": [f"Stock not Available"]})
 
         try:
-            current_min_quantity = FacilityInventoryMinQuantity.objects.get(facility=facility, item=item).min_quantity
+            current_min_quantity = FacilityInventoryMinQuantity.objects.get(
+                facility=facility, item=item).min_quantity
         except:
             pass
 
@@ -128,23 +131,29 @@ def set_burn_rate(facility, item):
     yesterday = timezone.now() - timedelta(days=1)
 
     previous_usage_log_sum = FacilityInventoryLog.objects.filter(
-        probable_accident=False, facility=facility, item=item, is_incoming=False, created_date__gte=yesterday
+        probable_accident=False,
+        facility=facility,
+        item=item,
+        is_incoming=False,
+        created_date__gte=yesterday,
     ).aggregate(Sum("quantity_in_default_unit"))
 
     if previous_usage_log_sum:
         burn_rate = 0
         if previous_usage_log_sum["quantity_in_default_unit__sum"]:
-            burn_rate = previous_usage_log_sum["quantity_in_default_unit__sum"] / 24
+            burn_rate = previous_usage_log_sum[
+                "quantity_in_default_unit__sum"] / 24
         FacilityInventoryBurnRate.objects.update_or_create(
-            facility=facility, item=item, defaults={"burn_rate": burn_rate}
-        )
+            facility=facility, item=item, defaults={"burn_rate": burn_rate})
 
 
 class FacilityInventorySummarySerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source="external_id", read_only=True)
 
-    item_object = FacilityInventoryItemSerializer(source="item", read_only=True)
-    unit_object = FacilityInventoryUnitSerializer(source="unit", read_only=True)
+    item_object = FacilityInventoryItemSerializer(source="item",
+                                                  read_only=True)
+    unit_object = FacilityInventoryUnitSerializer(source="unit",
+                                                  read_only=True)
 
     class Meta:
         model = FacilityInventorySummary
@@ -160,7 +169,8 @@ class FacilityInventorySummarySerializer(serializers.ModelSerializer):
 class FacilityInventoryMinQuantitySerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source="external_id", read_only=True)
 
-    item_object = FacilityInventoryItemSerializer(source="item", read_only=True)
+    item_object = FacilityInventoryItemSerializer(source="item",
+                                                  read_only=True)
 
     class Meta:
         model = FacilityInventoryMinQuantity
@@ -176,16 +186,20 @@ class FacilityInventoryMinQuantitySerializer(serializers.ModelSerializer):
         item = validated_data["item"]
 
         if not item:
-            raise serializers.ValidationError({"item": [f"Item cannot be Null"]})
+            raise serializers.ValidationError(
+                {"item": [f"Item cannot be Null"]})
 
         try:
             instance = super().create(validated_data)
         except:
-            raise serializers.ValidationError({"item": [f"Item min quantity already set"]})
+            raise serializers.ValidationError(
+                {"item": [f"Item min quantity already set"]})
 
         try:
-            summary_obj = FacilityInventorySummary.objects.get(facility=validated_data["facility"], item=item)
-            summary_obj.is_low = summary_obj.quantity < validated_data["min_quantity"]
+            summary_obj = FacilityInventorySummary.objects.get(
+                facility=validated_data["facility"], item=item)
+            summary_obj.is_low = summary_obj.quantity < validated_data[
+                "min_quantity"]
             summary_obj.save()
         except:
             pass
@@ -196,13 +210,16 @@ class FacilityInventoryMinQuantitySerializer(serializers.ModelSerializer):
 
         if "item" in validated_data:
             if instance.item != validated_data["item"]:
-                raise serializers.ValidationError({"item": [f"Item cannot be Changed"]})
+                raise serializers.ValidationError(
+                    {"item": [f"Item cannot be Changed"]})
 
         item = validated_data["item"]
 
         try:
-            summary_obj = FacilityInventorySummary.objects.get(facility=instance.facility, item=item)
-            summary_obj.is_low = summary_obj.quantity < validated_data["min_quantity"]
+            summary_obj = FacilityInventorySummary.objects.get(
+                facility=instance.facility, item=item)
+            summary_obj.is_low = summary_obj.quantity < validated_data[
+                "min_quantity"]
             summary_obj.save()
         except:
             pass

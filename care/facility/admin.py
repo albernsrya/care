@@ -7,28 +7,10 @@ from care.facility.models.ambulance import Ambulance, AmbulanceDriver
 from care.facility.models.patient_sample import PatientSample
 from care.facility.models.patient_tele_consultation import PatientTeleConsultation
 
-from .models import (
-    Building,
-    Disease,
-    Facility,
-    FacilityCapacity,
-    FacilityInventoryItem,
-    FacilityInventoryItemTag,
-    FacilityInventoryUnit,
-    FacilityInventoryUnitConverter,
-    FacilityStaff,
-    FacilityUser,
-    FacilityVolunteer,
-    Inventory,
-    InventoryItem,
-    InventoryLog,
-    PatientRegistration,
-    Room,
-    StaffRoomAllocation,
-    PatientExternalTest,
-    PatientInvestigationGroup,
-    PatientInvestigation,
-)
+from .models import (Building, Disease, Facility, FacilityCapacity, FacilityInventoryItem, FacilityInventoryItemTag,
+                     FacilityInventoryUnit, FacilityInventoryUnitConverter, FacilityStaff, FacilityUser,
+                     FacilityVolunteer, Inventory, InventoryItem, InventoryLog, PatientExternalTest,
+                     PatientInvestigation, PatientInvestigationGroup, PatientRegistration, Room, StaffRoomAllocation)
 
 
 class BuildingAdmin(admin.ModelAdmin):
@@ -37,7 +19,7 @@ class BuildingAdmin(admin.ModelAdmin):
 
 
 class DistrictFilter(SimpleListFilter):
-    """DistrictFilter """
+    """DistrictFilter"""
 
     title = "District"
     parameter_name = "district"
@@ -168,9 +150,12 @@ class PatientTestGroupAdmin(admin.ModelAdmin):
 class ExportCsvMixin:
     def export_as_csv(self, request, queryset):
 
-        queryset = FacilityUser.objects.all().values(*FacilityUser.CSV_MAPPING.keys())
+        queryset = FacilityUser.objects.all().values(
+            *FacilityUser.CSV_MAPPING.keys())
         return render_to_csv_response(
-            queryset, field_header_map=FacilityUser.CSV_MAPPING, field_serializer_map=FacilityUser.CSV_MAKE_PRETTY,
+            queryset,
+            field_header_map=FacilityUser.CSV_MAPPING,
+            field_serializer_map=FacilityUser.CSV_MAKE_PRETTY,
         )
 
     export_as_csv.short_description = "Export Selected"

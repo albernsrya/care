@@ -16,7 +16,11 @@ class PatientConsultationFilter(filters.FilterSet):
 
 
 class PatientConsultationViewSet(
-    mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericViewSet
+        mixins.CreateModelMixin,
+        mixins.ListModelMixin,
+        mixins.RetrieveModelMixin,
+        mixins.UpdateModelMixin,
+        GenericViewSet,
 ):
     lookup_field = "external_id"
     serializer_class = PatientConsultationSerializer
@@ -24,24 +28,33 @@ class PatientConsultationViewSet(
         IsAuthenticated,
         DRYPermissions,
     )
-    queryset = PatientConsultation.objects.all().select_related("facility").order_by("-id")
-    filter_backends = (filters.DjangoFilterBackend,)
+    queryset = (PatientConsultation.objects.all().select_related(
+        "facility").order_by("-id"))
+    filter_backends = (filters.DjangoFilterBackend, )
     filterset_class = PatientConsultationFilter
 
     def get_queryset(self):
         if self.request.user.is_superuser:
             return self.queryset
-        elif self.request.user.user_type >= User.TYPE_VALUE_MAP["StateLabAdmin"]:
-            return self.queryset.filter(patient__facility__state=self.request.user.state)
-        elif self.request.user.user_type >= User.TYPE_VALUE_MAP["DistrictLabAdmin"]:
-            return self.queryset.filter(patient__facility__district=self.request.user.district)
+        elif self.request.user.user_type >= User.TYPE_VALUE_MAP[
+                "StateLabAdmin"]:
+            return self.queryset.filter(
+                patient__facility__state=self.request.user.state)
+        elif self.request.user.user_type >= User.TYPE_VALUE_MAP[
+                "DistrictLabAdmin"]:
+            return self.queryset.filter(
+                patient__facility__district=self.request.user.district)
         filters = Q(patient__facility__users__id__exact=self.request.user.id)
         filters |= Q(assigned_to=self.request.user)
         return self.queryset.filter(filters).distinct("id")
 
 
 class DailyRoundsViewSet(
-    mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericViewSet
+        mixins.CreateModelMixin,
+        mixins.ListModelMixin,
+        mixins.RetrieveModelMixin,
+        mixins.UpdateModelMixin,
+        GenericViewSet,
 ):
     serializer_class = DailyRoundSerializer
     permission_classes = (
@@ -51,12 +64,12 @@ class DailyRoundsViewSet(
     queryset = DailyRound.objects.all().order_by("-id")
 
     def get_queryset(self):
-        queryset = self.queryset.filter(consultation__external_id=self.kwargs["consultation_external_id"])
+        queryset = self.queryset.filter(
+            consultation__external_id=self.kwargs["consultation_external_id"])
         return queryset
 
     def get_serializer(self, *args, **kwargs):
         if "data" in kwargs:
             kwargs["data"]["consultation"] = PatientConsultation.objects.get(
-                external_id=self.kwargs["consultation_external_id"]
-            ).id
+                external_id=self.kwargs["consultation_external_id"]).id
         return super().get_serializer(*args, **kwargs)

@@ -9,7 +9,6 @@ from rest_framework.viewsets import GenericViewSet
 
 from care.users.api.serializers.lsg import DistrictSerializer, LocalBodySerializer, StateSerializer, WardSerializer
 from care.users.models import District, LocalBody, State, Ward
-
 from care.utils.cache.mixin import ListCacheResponseMixin, RetrieveCacheResponseMixin
 
 
@@ -18,11 +17,11 @@ class PaginataionOverrideClass(PageNumberPagination):
 
 
 class StateViewSet(
-    ListCacheResponseMixin,
-    RetrieveCacheResponseMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    GenericViewSet,
+        ListCacheResponseMixin,
+        RetrieveCacheResponseMixin,
+        mixins.ListModelMixin,
+        mixins.RetrieveModelMixin,
+        GenericViewSet,
 ):
     serializer_class = StateSerializer
     queryset = State.objects.all().order_by("id")
@@ -32,26 +31,29 @@ class StateViewSet(
     @action(detail=True, methods=["get"])
     def districts(self, *args, **kwargs):
         state = self.get_object()
-        serializer = DistrictSerializer(state.district_set.all().order_by("name"), many=True)
+        serializer = DistrictSerializer(
+            state.district_set.all().order_by("name"), many=True)
         return Response(data=serializer.data)
 
 
 class DistrictFilterSet(filters.FilterSet):
     state = filters.NumberFilter(field_name="state_id")
-    state_name = filters.CharFilter(field_name="state__name", lookup_expr="icontains")
-    district_name = filters.CharFilter(field_name="name", lookup_expr="icontains")
+    state_name = filters.CharFilter(field_name="state__name",
+                                    lookup_expr="icontains")
+    district_name = filters.CharFilter(field_name="name",
+                                       lookup_expr="icontains")
 
 
 class DistrictViewSet(
-    ListCacheResponseMixin,
-    RetrieveCacheResponseMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    GenericViewSet,
+        ListCacheResponseMixin,
+        RetrieveCacheResponseMixin,
+        mixins.ListModelMixin,
+        mixins.RetrieveModelMixin,
+        GenericViewSet,
 ):
     serializer_class = DistrictSerializer
     queryset = District.objects.all().order_by("name")
-    filter_backends = (filters.DjangoFilterBackend,)
+    filter_backends = (filters.DjangoFilterBackend, )
     filterset_class = DistrictFilterSet
     pagination_class = PaginataionOverrideClass
 
@@ -59,7 +61,8 @@ class DistrictViewSet(
     @action(detail=True, methods=["get"])
     def local_bodies(self, *args, **kwargs):
         district = self.get_object()
-        serializer = LocalBodySerializer(district.localbody_set.all().order_by("name"), many=True)
+        serializer = LocalBodySerializer(
+            district.localbody_set.all().order_by("name"), many=True)
         return Response(data=serializer.data)
 
     @method_decorator(cache_page(3600))
@@ -69,53 +72,59 @@ class DistrictViewSet(
         data = []
         for lsg_object in LocalBody.objects.filter(district=district):
             local_body_object = LocalBodySerializer(lsg_object).data
-            local_body_object["wards"] = WardSerializer(Ward.objects.filter(local_body=lsg_object), many=True).data
+            local_body_object["wards"] = WardSerializer(
+                Ward.objects.filter(local_body=lsg_object), many=True).data
             data.append(local_body_object)
         return Response(data)
 
 
 class LocalBodyFilterSet(filters.FilterSet):
     state = filters.NumberFilter(field_name="district__state_id")
-    state_name = filters.CharFilter(field_name="district__state__name", lookup_expr="icontains")
+    state_name = filters.CharFilter(field_name="district__state__name",
+                                    lookup_expr="icontains")
     district = filters.NumberFilter(field_name="district_id")
-    district_name = filters.CharFilter(field_name="district__name", lookup_expr="icontains")
-    local_body_name = filters.CharFilter(field_name="name", lookup_expr="icontains")
+    district_name = filters.CharFilter(field_name="district__name",
+                                       lookup_expr="icontains")
+    local_body_name = filters.CharFilter(field_name="name",
+                                         lookup_expr="icontains")
 
 
 class LocalBodyViewSet(
-    ListCacheResponseMixin,
-    RetrieveCacheResponseMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    GenericViewSet,
+        ListCacheResponseMixin,
+        RetrieveCacheResponseMixin,
+        mixins.ListModelMixin,
+        mixins.RetrieveModelMixin,
+        GenericViewSet,
 ):
     serializer_class = LocalBodySerializer
     queryset = LocalBody.objects.all().order_by("name")
-    filter_backends = (filters.DjangoFilterBackend,)
+    filter_backends = (filters.DjangoFilterBackend, )
     filterset_class = LocalBodyFilterSet
     pagination_class = PaginataionOverrideClass
 
 
 class WardFilterSet(filters.FilterSet):
     state = filters.NumberFilter(field_name="district__state_id")
-    state_name = filters.CharFilter(field_name="district__state__name", lookup_expr="icontains")
+    state_name = filters.CharFilter(field_name="district__state__name",
+                                    lookup_expr="icontains")
     district = filters.NumberFilter(field_name="local_body__district_id")
-    district_name = filters.CharFilter(field_name="local_body__district__name", lookup_expr="icontains")
+    district_name = filters.CharFilter(field_name="local_body__district__name",
+                                       lookup_expr="icontains")
     local_body = filters.NumberFilter(field_name="local_body_id")
-    local_body_name = filters.CharFilter(field_name="local_body__name", lookup_expr="icontains")
+    local_body_name = filters.CharFilter(field_name="local_body__name",
+                                         lookup_expr="icontains")
     ward_name = filters.CharFilter(field_name="name", lookup_expr="icontains")
 
 
 class WardViewSet(
-    ListCacheResponseMixin,
-    RetrieveCacheResponseMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    GenericViewSet,
+        ListCacheResponseMixin,
+        RetrieveCacheResponseMixin,
+        mixins.ListModelMixin,
+        mixins.RetrieveModelMixin,
+        GenericViewSet,
 ):
     serializer_class = WardSerializer
     queryset = Ward.objects.all().order_by("name")
-    filter_backends = (filters.DjangoFilterBackend,)
+    filter_backends = (filters.DjangoFilterBackend, )
     filterset_class = WardFilterSet
     pagination_class = PaginataionOverrideClass
-

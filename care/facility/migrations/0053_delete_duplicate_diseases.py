@@ -5,7 +5,8 @@ def delete_duplicates(apps, *args):
     Disease = apps.get_model("facility", "Disease")
 
     # .order_by("-id") so that latest record is retained
-    records = Disease.objects.all().order_by("-id").values("id", "patient", "disease")
+    records = Disease.objects.all().order_by("-id").values(
+        "id", "patient", "disease")
     checked = []
     to_be_deleted = set()
     for record in records:

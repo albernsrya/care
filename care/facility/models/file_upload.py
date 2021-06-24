@@ -1,7 +1,8 @@
 import enum
 import time
-import boto3
 from uuid import uuid4
+
+import boto3
 from django.conf import settings
 from django.db import models
 
@@ -38,10 +39,16 @@ class FileUpload(FacilityBaseModel):
     internal_name = models.CharField(max_length=2000)
     associating_id = models.CharField(max_length=100, blank=False, null=False)
     upload_completed = models.BooleanField(default=False)
-    uploaded_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
-    file_type = models.IntegerField(choices=FileTypeChoices, default=FileType.PATIENT.value)
+    uploaded_by = models.ForeignKey(User,
+                                    on_delete=models.PROTECT,
+                                    null=True,
+                                    blank=True)
+    file_type = models.IntegerField(choices=FileTypeChoices,
+                                    default=FileType.PATIENT.value)
     file_category = models.CharField(
-        choices=FileCategoryChoices, default=FileCategory.UNSPECIFIED.value, max_length=100
+        choices=FileCategoryChoices,
+        default=FileCategory.UNSPECIFIED.value,
+        max_length=100,
     )
 
     def save(self, *args, **kwargs):
@@ -64,8 +71,10 @@ class FileUpload(FacilityBaseModel):
         signed_url = s3Client.generate_presigned_url(
             "put_object",
             Params={
-                "Bucket": settings.FILE_UPLOAD_BUCKET,
-                "Key": self.FileType(self.file_type).name + "/" + self.internal_name,
+                "Bucket":
+                settings.FILE_UPLOAD_BUCKET,
+                "Key":
+                self.FileType(self.file_type).name + "/" + self.internal_name,
             },
             ExpiresIn=60 * 60,  # One Hour
         )
@@ -81,8 +90,10 @@ class FileUpload(FacilityBaseModel):
         signed_url = s3Client.generate_presigned_url(
             "get_object",
             Params={
-                "Bucket": settings.FILE_UPLOAD_BUCKET,
-                "Key": self.FileType(self.file_type).name + "/" + self.internal_name,
+                "Bucket":
+                settings.FILE_UPLOAD_BUCKET,
+                "Key":
+                self.FileType(self.file_type).name + "/" + self.internal_name,
             },
             ExpiresIn=60 * 60,  # One Hour
         )

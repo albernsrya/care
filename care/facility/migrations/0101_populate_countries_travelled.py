@@ -10,7 +10,8 @@ def populate_countries_travelled(*args):
 
 
 def reverse_populate_countries_travelled(*args):
-    raise Exception("Should manually populate the data and then fake these migrations.")
+    raise Exception(
+        "Should manually populate the data and then fake these migrations.")
 
 
 class Migration(migrations.Migration):
@@ -18,4 +19,9 @@ class Migration(migrations.Migration):
         ("facility", "0100_auto_20200418_2315"),
     ]
 
-    operations = [migrations.RunPython(populate_countries_travelled, reverse_code=reverse_populate_countries_travelled)]
+    operations = [
+        migrations.RunPython(
+            populate_countries_travelled,
+            reverse_code=reverse_populate_countries_travelled,
+        )
+    ]

@@ -10,24 +10,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from care.facility.api.serializers.inventory import (
-    FacilityInventoryBurnRateSerializer,
-    FacilityInventoryItemSerializer,
-    FacilityInventoryLogSerializer,
-    FacilityInventoryMinQuantitySerializer,
-    FacilityInventorySummarySerializer,
-    set_burn_rate,
-)
+from care.facility.api.serializers.inventory import (FacilityInventoryBurnRateSerializer,
+                                                     FacilityInventoryItemSerializer, FacilityInventoryLogSerializer,
+                                                     FacilityInventoryMinQuantitySerializer,
+                                                     FacilityInventorySummarySerializer, set_burn_rate)
 from care.facility.api.viewsets.mixins.access import UserAccessMixin
-from care.facility.models import (
-    Facility,
-    FacilityInventoryBurnRate,
-    FacilityInventoryItem,
-    FacilityInventoryLog,
-    FacilityInventoryMinQuantity,
-    FacilityInventorySummary,
-    facility,
-)
+from care.facility.models import (Facility, FacilityInventoryBurnRate, FacilityInventoryItem, FacilityInventoryLog,
+                                  FacilityInventoryMinQuantity, FacilityInventorySummary, facility)
 from care.users.models import User
 from care.utils.queryset.facility import get_facility_queryset
 from care.utils.validation.integer_validation import check_integer
@@ -38,14 +27,16 @@ class FacilityInventoryFilter(filters.FilterSet):
 
 
 class FacilityInventoryItemViewSet(
-    UserAccessMixin, RetrieveModelMixin, ListModelMixin, GenericViewSet,
+        UserAccessMixin,
+        RetrieveModelMixin,
+        ListModelMixin,
+        GenericViewSet,
 ):
     serializer_class = FacilityInventoryItemSerializer
-    queryset = (
-        FacilityInventoryItem.objects.select_related("default_unit").prefetch_related("allowed_units", "tags").all()
-    )
-    permission_classes = (IsAuthenticated,)
-    filter_backends = (filters.DjangoFilterBackend,)
+    queryset = (FacilityInventoryItem.objects.select_related(
+        "default_unit").prefetch_related("allowed_units", "tags").all())
+    permission_classes = (IsAuthenticated, )
+    filter_backends = (filters.DjangoFilterBackend, )
     filterset_class = FacilityInventoryFilter
 
 
@@ -55,40 +46,52 @@ class FacilityInventoryLogFilter(filters.FilterSet):
 
 
 class FacilityInventoryLogViewSet(
-    UserAccessMixin, RetrieveModelMixin, CreateModelMixin, ListModelMixin, GenericViewSet,
+        UserAccessMixin,
+        RetrieveModelMixin,
+        CreateModelMixin,
+        ListModelMixin,
+        GenericViewSet,
 ):
     lookup_field = "external_id"
     serializer_class = FacilityInventoryLogSerializer
-    queryset = FacilityInventoryLog.objects.select_related("item", "unit").order_by("-created_date")
+    queryset = FacilityInventoryLog.objects.select_related(
+        "item", "unit").order_by("-created_date")
     permission_classes = (
         IsAuthenticated,
         DRYPermissions,
     )
-    filter_backends = (filters.DjangoFilterBackend,)
+    filter_backends = (filters.DjangoFilterBackend, )
     filterset_class = FacilityInventoryLogFilter
 
     def get_queryset(self):
         user = self.request.user
-        queryset = self.queryset.filter(facility__external_id=self.kwargs.get("facility_external_id"))
+        queryset = self.queryset.filter(
+            facility__external_id=self.kwargs.get("facility_external_id"))
         if user.is_superuser:
             return queryset
-        elif self.request.user.user_type >= User.TYPE_VALUE_MAP["StateLabAdmin"]:
+        elif self.request.user.user_type >= User.TYPE_VALUE_MAP[
+                "StateLabAdmin"]:
             return queryset.filter(facility__state=user.state)
-        elif self.request.user.user_type >= User.TYPE_VALUE_MAP["DistrictLabAdmin"]:
+        elif self.request.user.user_type >= User.TYPE_VALUE_MAP[
+                "DistrictLabAdmin"]:
             return queryset.filter(facility__district=user.district)
         return queryset.filter(facility__users__id__exact=user.id)
 
     def get_object(self):
         print(self.kwargs)
-        return get_object_or_404(self.get_queryset(), external_id=self.kwargs.get("external_id"))
+        return get_object_or_404(self.get_queryset(),
+                                 external_id=self.kwargs.get("external_id"))
 
     def get_facility(self):
         queryset = get_facility_queryset(self.request.user)
-        return get_object_or_404(queryset.filter(external_id=self.kwargs.get("facility_external_id")))
+        return get_object_or_404(
+            queryset.filter(
+                external_id=self.kwargs.get("facility_external_id")))
 
     @action(methods=["PUT"], detail=True)
     def flag(self, request, **kwargs):
-        log_obj = get_object_or_404(self.get_queryset(), external_id=self.kwargs.get("external_id"))
+        log_obj = get_object_or_404(self.get_queryset(),
+                                    external_id=self.kwargs.get("external_id"))
         log_obj.probable_accident = not log_obj.probable_accident
         log_obj.save()
         set_burn_rate(log_obj.facility, log_obj.item)
@@ -101,8 +104,10 @@ class FacilityInventoryLogViewSet(
         if not item:
             raise ValidationError({"item": "is required"})
         item = check_integer(item)[0]
-        item_obj = get_object_or_404(FacilityInventoryItem.objects.filter(id=item))
-        inventory_log_object = FacilityInventoryLog.objects.filter(item=item_obj, facility=facility).order_by("-id")
+        item_obj = get_object_or_404(
+            FacilityInventoryItem.objects.filter(id=item))
+        inventory_log_object = FacilityInventoryLog.objects.filter(
+            item=item_obj, facility=facility).order_by("-id")
         if not inventory_log_object.exists():
             raise ValidationError({"inventory": "Does not Exist"})
         inventory_log_object = inventory_log_object[0]
@@ -125,7 +130,12 @@ class FacilityInventoryLogViewSet(
 
 
 class FacilityInventoryMinQuantityViewSet(
-    UserAccessMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, ListModelMixin, GenericViewSet,
+        UserAccessMixin,
+        RetrieveModelMixin,
+        CreateModelMixin,
+        UpdateModelMixin,
+        ListModelMixin,
+        GenericViewSet,
 ):
     lookup_field = "external_id"
     serializer_class = FacilityInventoryMinQuantitySerializer
@@ -137,20 +147,25 @@ class FacilityInventoryMinQuantityViewSet(
 
     def get_queryset(self):
         user = self.request.user
-        queryset = self.queryset.filter(facility__external_id=self.kwargs.get("facility_external_id"))
+        queryset = self.queryset.filter(
+            facility__external_id=self.kwargs.get("facility_external_id"))
         if user.is_superuser:
             return queryset
-        elif self.request.user.user_type >= User.TYPE_VALUE_MAP["DistrictLabAdmin"]:
+        elif self.request.user.user_type >= User.TYPE_VALUE_MAP[
+                "DistrictLabAdmin"]:
             return queryset.filter(facility__district=user.district)
-        elif self.request.user.user_type >= User.TYPE_VALUE_MAP["StateLabAdmin"]:
+        elif self.request.user.user_type >= User.TYPE_VALUE_MAP[
+                "StateLabAdmin"]:
             return queryset.filter(facility__state=user.state)
         return queryset.filter(facility__users__id__exact=user.id)
 
     def get_object(self):
-        return get_object_or_404(self.get_queryset(), external_id=self.kwargs.get("external_id"))
+        return get_object_or_404(self.get_queryset(),
+                                 external_id=self.kwargs.get("external_id"))
 
     def get_facility(self):
-        facility_qs = Facility.objects.filter(external_id=self.kwargs.get("facility_external_id"))
+        facility_qs = Facility.objects.filter(
+            external_id=self.kwargs.get("facility_external_id"))
         if not self.request.user.is_superuser:
             facility_qs.filter(users__id__exact=self.request.user.id)
         return get_object_or_404(facility_qs)
@@ -160,7 +175,10 @@ class FacilityInventoryMinQuantityViewSet(
 
 
 class FacilityInventorySummaryViewSet(
-    UserAccessMixin, RetrieveModelMixin, ListModelMixin, GenericViewSet,
+        UserAccessMixin,
+        RetrieveModelMixin,
+        ListModelMixin,
+        GenericViewSet,
 ):
     lookup_field = "external_id"
     serializer_class = FacilityInventorySummarySerializer
@@ -172,23 +190,26 @@ class FacilityInventorySummaryViewSet(
 
     def get_queryset(self):
         user = self.request.user
-        queryset = self.queryset.filter(facility__external_id=self.kwargs.get("facility_external_id"))
+        queryset = self.queryset.filter(
+            facility__external_id=self.kwargs.get("facility_external_id"))
         if user.is_superuser:
             return queryset
-        elif self.request.user.user_type >= User.TYPE_VALUE_MAP["DistrictLabAdmin"]:
+        elif self.request.user.user_type >= User.TYPE_VALUE_MAP[
+                "DistrictLabAdmin"]:
             return queryset.filter(facility__district=user.district)
-        elif self.request.user.user_type >= User.TYPE_VALUE_MAP["StateLabAdmin"]:
+        elif self.request.user.user_type >= User.TYPE_VALUE_MAP[
+                "StateLabAdmin"]:
             return queryset.filter(facility__state=user.state)
         return queryset.filter(facility__users__id__exact=user.id)
 
     def get_object(self):
-        return get_object_or_404(self.get_queryset(), external_id=self.kwargs.get("external_id"))
+        return get_object_or_404(self.get_queryset(),
+                                 external_id=self.kwargs.get("external_id"))
 
 
 # class FacilityInventoryBurnRateFilter(filters.FilterSet):
 #     name = filters.CharFilter(field_name="facility__name", lookup_expr="icontains")
 #     item = filters.NumberFilter(field_name="item_id")
-
 
 # class FacilityInventoryBurnRateViewSet(
 #     UserAccessMixin, ListModelMixin, RetrieveModelMixin, GenericViewSet,

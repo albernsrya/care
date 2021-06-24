@@ -1,13 +1,9 @@
 import datetime
+
 from dateutil.relativedelta import *
-from care.facility.models import (
-    DISEASE_CHOICES_MAP,
-    SYMPTOM_CHOICES,
-    PatientConsultation,
-    PatientContactDetails,
-    PatientRegistration,
-    PatientSample,
-)
+
+from care.facility.models import (DISEASE_CHOICES_MAP, SYMPTOM_CHOICES, PatientConsultation, PatientContactDetails,
+                                  PatientRegistration, PatientSample)
 
 
 class PatientIcmr(PatientRegistration):
@@ -46,7 +42,8 @@ class PatientIcmr(PatientRegistration):
     @property
     def age_years(self):
         if self.date_of_birth is not None:
-            age_years = relativedelta(datetime.datetime.now(), self.date_of_birth).years
+            age_years = relativedelta(datetime.datetime.now(),
+                                      self.date_of_birth).years
         else:
             age_years = relativedelta(
                 datetime.datetime.now(),
@@ -59,9 +56,8 @@ class PatientIcmr(PatientRegistration):
         if self.date_of_birth is None or self.year_of_birth is None:
             age_months = 0
         else:
-            age_months = relativedelta(
-                datetime.datetime.now(), self.date_of_birth
-            ).months
+            age_months = relativedelta(datetime.datetime.now(),
+                                       self.date_of_birth).months
         return age_months
 
     @property
@@ -84,10 +80,9 @@ class PatientIcmr(PatientRegistration):
     def has_travel_to_foreign_last_14_days(self):
         if self.countries_travelled:
             return len(self.countries_travelled) != 0 and (
-                self.date_of_return
-                and (self.date_of_return.date() - datetime.datetime.now().date()).days
-                <= 14
-            )
+                self.date_of_return and
+                (self.date_of_return.date() -
+                 datetime.datetime.now().date()).days <= 14)
 
     @property
     def travel_end_date(self):
@@ -98,16 +93,16 @@ class PatientIcmr(PatientRegistration):
         return None
 
     @property
-    def contact_case_name(self,):
+    def contact_case_name(self, ):
         contact_case = self.contacted_patients.first()
         return "" if not contact_case else contact_case.name
 
     @property
-    def was_quarantined(self,):
+    def was_quarantined(self, ):
         return None
 
     @property
-    def quarantined_type(self,):
+    def quarantined_type(self, ):
         return None
 
 
@@ -170,35 +165,28 @@ class PatientSampleICMR(PatientSample):
 
     @property
     def hospitalization_date(self):
-        return (
-            self.consultation.admission_date.date()
-            if self.consultation and self.consultation.admission_date
-            else None
-        )
+        return (self.consultation.admission_date.date() if self.consultation
+                and self.consultation.admission_date else None)
 
     @property
     def medical_conditions_list(self):
         return [
-            item.disease
-            for item in self.patient.medical_history.all()
+            item.disease for item in self.patient.medical_history.all()
             if item.disease != DISEASE_CHOICES_MAP["NO"]
         ]
 
     @property
     def symptoms(self):
         return [
-            symptom
-            for symptom in self.consultation.symptoms
+            symptom for symptom in self.consultation.symptoms
             # if SYMPTOM_CHOICES[0][0] not in self.consultation.symptoms.choices.keys()
         ]
 
     @property
     def date_of_onset_of_symptoms(self):
-        return (
-            self.consultation.symptoms_onset_date.date()
-            if self.consultation and self.consultation.symptoms_onset_date
-            else None
-        )
+        return (self.consultation.symptoms_onset_date.date()
+                if self.consultation and self.consultation.symptoms_onset_date
+                else None)
 
 
 class PatientConsultationICMR(PatientConsultation):
@@ -206,46 +194,36 @@ class PatientConsultationICMR(PatientConsultation):
         proxy = True
 
     def is_symptomatic(self):
-        if (
-            SYMPTOM_CHOICES[0][0] not in self.symptoms.choices.keys()
-            or self.symptoms_onset_date is not None
-        ):
+        if (SYMPTOM_CHOICES[0][0] not in self.symptoms.choices.keys()
+                or self.symptoms_onset_date is not None):
             return True
         else:
             return False
 
-    def symptomatic_international_traveller(self,):
-        return (
-            len(self.patient.countries_travelled) != 0
-            and (
-                self.patient.date_of_return
-                and (
-                    self.patient.date_of_return.date() - datetime.datetime.now().date()
-                ).days
-                <= 14
-            )
-            and self.is_symptomatic()
+    def symptomatic_international_traveller(self, ):
+        return (len(self.patient.countries_travelled) != 0
+                and (self.patient.date_of_return and
+                     (self.patient.date_of_return.date() -
+                      datetime.datetime.now().date()).days <= 14)
+                and self.is_symptomatic())
+
+    def symptomatic_contact_of_confirmed_case(self, ):
+        return self.patient.contact_with_confirmed_carrier and self.is_symptomatic(
         )
 
-    def symptomatic_contact_of_confirmed_case(self,):
-        return self.patient.contact_with_confirmed_carrier and self.is_symptomatic()
-
-    def symptomatic_healthcare_worker(self,):
+    def symptomatic_healthcare_worker(self, ):
         return self.patient.is_medical_worker and self.is_symptomatic()
 
     def hospitalized_sari_patient(self):
         return self.patient.has_SARI and self.admitted
 
-    def asymptomatic_family_member_of_confirmed_case(self,):
+    def asymptomatic_family_member_of_confirmed_case(self, ):
         return (
             self.patient.contact_with_confirmed_carrier
-            and not self.is_symptomatic()
-            and any(
-                contact_patient.relation_with_patient
-                == PatientContactDetails.RelationEnum.FAMILY_MEMBER.value
-                for contact_patient in self.patient.contacted_patients.all()
-            )
-        )
+            and not self.is_symptomatic() and any(
+                contact_patient.relation_with_patient ==
+                PatientContactDetails.RelationEnum.FAMILY_MEMBER.value
+                for contact_patient in self.patient.contacted_patients.all()))
 
-    def asymptomatic_healthcare_worker_without_protection(self,):
+    def asymptomatic_healthcare_worker_without_protection(self, ):
         return self.patient.is_medical_worker and not self.is_symptomatic()

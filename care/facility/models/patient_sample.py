@@ -15,8 +15,14 @@ SAMPLE_TYPE_CHOICES = [
 
 
 class PatientSample(FacilityBaseModel):
-    SAMPLE_TEST_RESULT_MAP = {"POSITIVE": 1, "NEGATIVE": 2, "AWAITING": 3, "INVALID": 4}
-    SAMPLE_TEST_RESULT_CHOICES = [(v, k) for k, v in SAMPLE_TEST_RESULT_MAP.items()]
+    SAMPLE_TEST_RESULT_MAP = {
+        "POSITIVE": 1,
+        "NEGATIVE": 2,
+        "AWAITING": 3,
+        "INVALID": 4
+    }
+    SAMPLE_TEST_RESULT_CHOICES = [(v, k)
+                                  for k, v in SAMPLE_TEST_RESULT_MAP.items()]
 
     PATIENT_ICMR_CATEGORY = [
         (0, "Cat 0"),
@@ -37,20 +43,34 @@ class PatientSample(FacilityBaseModel):
         "RECEIVED_AT_LAB": 6,
         "COMPLETED": 7,
     }
-    SAMPLE_TEST_FLOW_CHOICES = [(v, k) for k, v in SAMPLE_TEST_FLOW_MAP.items()]
+    SAMPLE_TEST_FLOW_CHOICES = [(v, k)
+                                for k, v in SAMPLE_TEST_FLOW_MAP.items()]
     SAMPLE_FLOW_RULES = {
         # previous rule      # next valid rules
-        "REQUEST_SUBMITTED": {"APPROVED", "DENIED",},
-        "APPROVED": {"SENT_TO_COLLECTON_CENTRE", "RECEIVED_AND_FORWARED", "RECEIVED_AT_LAB", "COMPLETED"},
+        "REQUEST_SUBMITTED": {
+            "APPROVED",
+            "DENIED",
+        },
+        "APPROVED": {
+            "SENT_TO_COLLECTON_CENTRE",
+            "RECEIVED_AND_FORWARED",
+            "RECEIVED_AT_LAB",
+            "COMPLETED",
+        },
         "DENIED": {"REQUEST_SUBMITTED"},
-        "SENT_TO_COLLECTON_CENTRE": {"RECEIVED_AND_FORWARED", "RECEIVED_AT_LAB", "COMPLETED"},
+        "SENT_TO_COLLECTON_CENTRE": {
+            "RECEIVED_AND_FORWARED",
+            "RECEIVED_AT_LAB",
+            "COMPLETED",
+        },
         "RECEIVED_AND_FORWARED": {"RECEIVED_AT_LAB", "COMPLETED"},
         "RECEIVED_AT_LAB": {"COMPLETED"},
-        "COMPLETED" : {"COMPLETED"}
+        "COMPLETED": {"COMPLETED"},
     }
 
     patient = models.ForeignKey(PatientRegistration, on_delete=models.PROTECT)
-    consultation = models.ForeignKey("PatientConsultation", on_delete=models.PROTECT)
+    consultation = models.ForeignKey("PatientConsultation",
+                                     on_delete=models.PROTECT)
 
     sample_type = models.IntegerField(choices=SAMPLE_TYPE_CHOICES, default=0)
     sample_type_other = models.TextField(default="")
@@ -58,7 +78,8 @@ class PatientSample(FacilityBaseModel):
     has_sari = models.BooleanField(default=False)
     has_ari = models.BooleanField(default=False)
 
-    doctor_name = models.CharField(max_length=255, default="NO DOCTOR SPECIFIED")
+    doctor_name = models.CharField(max_length=255,
+                                   default="NO DOCTOR SPECIFIED")
     diagnosis = models.TextField(default="")
     diff_diagnosis = models.TextField(default="")
     etiology_identified = models.TextField(default="")
@@ -66,19 +87,27 @@ class PatientSample(FacilityBaseModel):
     atypical_presentation = models.TextField(default="")
     is_unusual_course = models.BooleanField(default=False)
 
-    icmr_category = models.IntegerField(choices=PATIENT_ICMR_CATEGORY, default=0)
+    icmr_category = models.IntegerField(choices=PATIENT_ICMR_CATEGORY,
+                                        default=0)
 
     icmr_label = models.CharField(max_length=200, default="")
 
-    status = models.IntegerField(choices=SAMPLE_TEST_FLOW_CHOICES, default=SAMPLE_TEST_FLOW_MAP["REQUEST_SUBMITTED"])
-    result = models.IntegerField(choices=SAMPLE_TEST_RESULT_CHOICES, default=SAMPLE_TEST_RESULT_MAP["AWAITING"])
+    status = models.IntegerField(
+        choices=SAMPLE_TEST_FLOW_CHOICES,
+        default=SAMPLE_TEST_FLOW_MAP["REQUEST_SUBMITTED"],
+    )
+    result = models.IntegerField(choices=SAMPLE_TEST_RESULT_CHOICES,
+                                 default=SAMPLE_TEST_RESULT_MAP["AWAITING"])
 
     fast_track = models.TextField(default="")
 
     date_of_sample = models.DateTimeField(null=True, blank=True)
     date_of_result = models.DateTimeField(null=True, blank=True)
 
-    testing_facility = models.ForeignKey("Facility", on_delete=models.SET_NULL, null=True, blank=True)
+    testing_facility = models.ForeignKey("Facility",
+                                         on_delete=models.SET_NULL,
+                                         null=True,
+                                         blank=True)
 
     def save(self, *args, **kwargs) -> None:
         if self.testing_facility is None:
@@ -94,17 +123,20 @@ class PatientSample(FacilityBaseModel):
 
     @staticmethod
     def has_write_permission(request):
-        if (
-            request.user.user_type == User.TYPE_VALUE_MAP["DistrictReadOnlyAdmin"]
-            or request.user.user_type == User.TYPE_VALUE_MAP["StateReadOnlyAdmin"]
-            or request.user.user_type == User.TYPE_VALUE_MAP["StaffReadOnly"]
-        ):
+        if (request.user.user_type
+                == User.TYPE_VALUE_MAP["DistrictReadOnlyAdmin"]
+                or request.user.user_type
+                == User.TYPE_VALUE_MAP["StateReadOnlyAdmin"]
+                or request.user.user_type
+                == User.TYPE_VALUE_MAP["StaffReadOnly"]):
             return False
-        return request.user.is_superuser or request.user.user_type >= User.TYPE_VALUE_MAP["Staff"]
+        return (request.user.is_superuser
+                or request.user.user_type >= User.TYPE_VALUE_MAP["Staff"])
 
     @staticmethod
     def has_read_permission(request):
-        return request.user.is_superuser or request.user.user_type >= User.TYPE_VALUE_MAP["Staff"]
+        return (request.user.is_superuser
+                or request.user.user_type >= User.TYPE_VALUE_MAP["Staff"])
 
     def has_object_read_permission(self, request):
         if self.testing_facility:
@@ -112,25 +144,21 @@ class PatientSample(FacilityBaseModel):
 
         return (
             request.user.is_superuser
-            or request.user == self.consultation.facility.created_by
-            or (
-                request.user.district == self.consultation.facility.district
-                and request.user.user_type >= User.TYPE_VALUE_MAP["DistrictLabAdmin"]
-            )
-            or (
-                request.user.state == self.consultation.facility.state
-                and request.user.user_type >= User.TYPE_VALUE_MAP["StateLabAdmin"]
-            )
+            or request.user == self.consultation.facility.created_by or
+            (request.user.district == self.consultation.facility.district and
+             request.user.user_type >= User.TYPE_VALUE_MAP["DistrictLabAdmin"])
+            or (request.user.state == self.consultation.facility.state and
+                request.user.user_type >= User.TYPE_VALUE_MAP["StateLabAdmin"])
             or request.user in self.patient.facility.users.all()
-            or test_facility
-        )
+            or test_facility)
 
     def has_object_update_permission(self, request):
-        if (
-            request.user.user_type == User.TYPE_VALUE_MAP["DistrictReadOnlyAdmin"]
-            or request.user.user_type == User.TYPE_VALUE_MAP["StateReadOnlyAdmin"]
-            or request.user.user_type == User.TYPE_VALUE_MAP["StaffReadOnly"]
-        ):
+        if (request.user.user_type
+                == User.TYPE_VALUE_MAP["DistrictReadOnlyAdmin"]
+                or request.user.user_type
+                == User.TYPE_VALUE_MAP["StateReadOnlyAdmin"]
+                or request.user.user_type
+                == User.TYPE_VALUE_MAP["StaffReadOnly"]):
             return False
         if not self.has_object_read_permission(request):
             return False
@@ -152,6 +180,7 @@ class PatientSample(FacilityBaseModel):
 
 class PatientSampleFlow(FacilityBaseModel):
     patient_sample = models.ForeignKey(PatientSample, on_delete=models.PROTECT)
-    status = models.IntegerField(choices=PatientSample.SAMPLE_TEST_FLOW_CHOICES)
+    status = models.IntegerField(
+        choices=PatientSample.SAMPLE_TEST_FLOW_CHOICES)
     notes = models.CharField(max_length=255)
     created_by = models.ForeignKey(User, on_delete=models.PROTECT)

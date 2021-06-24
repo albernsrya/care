@@ -24,4 +24,5 @@ class TestPhoneNumberIsPossibleField(TestCase):
                 with self.assertRaises(ValidationError):
                     PhoneNumberIsPossibleField().to_internal_value(ip)
             else:
-                self.assertEqual(PhoneNumberIsPossibleField().to_internal_value(ip), op)
+                self.assertEqual(
+                    PhoneNumberIsPossibleField().to_internal_value(ip), op)

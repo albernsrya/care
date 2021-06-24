@@ -1,16 +1,15 @@
 import logging
 
+from django import forms
+from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.views import View
-from django import forms
+
 from care.users.forms import CustomSignupForm, User
-
 from config.ratelimit import ratelimit
-
-from django.conf import settings
 
 
 def home_view(request):
@@ -26,9 +25,10 @@ class SignupView(View):
             form = self.form_class()
             if kwargs["type"] != User.TYPE_VALUE_MAP["Volunteer"]:
                 form.fields["skill"].widget = forms.HiddenInput()
-            return render(
-                request, self.template, {"form": form, "type": kwargs["name"]}
-            )
+            return render(request, self.template, {
+                "form": form,
+                "type": kwargs["name"]
+            })
         except Exception as e:
             print(e)
             logging.error(e)

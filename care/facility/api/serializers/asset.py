@@ -1,4 +1,5 @@
 from re import L
+
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
@@ -27,7 +28,8 @@ class AssetSerializer(ModelSerializer):
     status = ChoiceField(choices=Asset.StatusChoices, read_only=True)
     asset_type = ChoiceField(choices=Asset.AssetTypeChoices)
 
-    location_object = AssetLocationSerializer(source="current_location", read_only=True)
+    location_object = AssetLocationSerializer(source="current_location",
+                                              read_only=True)
 
     location = UUIDField(write_only=True, required=True)
 
@@ -40,7 +42,8 @@ class AssetSerializer(ModelSerializer):
 
         user = self.context["request"].user
         if "location" in attrs:
-            location = get_object_or_404(AssetLocation.objects.filter(external_id=attrs["location"]))
+            location = get_object_or_404(
+                AssetLocation.objects.filter(external_id=attrs["location"]))
 
             facilities = get_facility_queryset(user)
             if not facilities.filter(id=location.facility.id).exists():
@@ -54,9 +57,14 @@ class AssetSerializer(ModelSerializer):
         user = self.context["request"].user
         with transaction.atomic():
             if "current_location" in validated_data:
-                if instance.current_location != validated_data["current_location"]:
-                    if instance.current_location.facility.id != validated_data["current_location"].facility.id:
-                        raise ValidationError({"location": "Interfacility transfer is not allowed here"})
+                if instance.current_location != validated_data[
+                        "current_location"]:
+                    if (instance.current_location.facility.id !=
+                            validated_data["current_location"].facility.id):
+                        raise ValidationError({
+                            "location":
+                            "Interfacility transfer is not allowed here"
+                        })
                     AssetTransaction(
                         from_location=instance.current_location,
                         to_location=validated_data["current_location"],
@@ -88,7 +96,8 @@ class AssetTransactionSerializer(ModelSerializer):
 
 
 class UserDefaultAssetLocationSerializer(ModelSerializer):
-    location_object = AssetLocationSerializer(source="location", read_only=True)
+    location_object = AssetLocationSerializer(source="location",
+                                              read_only=True)
 
     class Meta:
         model = UserDefaultAssetLocation
