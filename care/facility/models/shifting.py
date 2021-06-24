@@ -1,12 +1,7 @@
 from django.db import models
 
-from care.facility.models import (
-    FACILITY_TYPES,
-    READ_ONLY_USER_TYPES,
-    FacilityBaseModel,
-    pretty_boolean,
-    reverse_choices,
-)
+from care.facility.models import (FACILITY_TYPES, READ_ONLY_USER_TYPES, FacilityBaseModel, pretty_boolean,
+                                  reverse_choices)
 from care.users.models import User, phone_number_regex
 
 SHIFTING_STATUS_CHOICES = (
@@ -43,35 +38,68 @@ REVERSE_SHIFTING_STATUS_CHOICES = reverse_choices(SHIFTING_STATUS_CHOICES)
 
 class ShiftingRequest(FacilityBaseModel):
 
-    orgin_facility = models.ForeignKey("Facility", on_delete=models.PROTECT, related_name="requesting_facility")
+    orgin_facility = models.ForeignKey("Facility",
+                                       on_delete=models.PROTECT,
+                                       related_name="requesting_facility")
     shifting_approving_facility = models.ForeignKey(
-        "Facility", on_delete=models.SET_NULL, null=True, related_name="shifting_approving_facility"
+        "Facility",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="shifting_approving_facility",
     )
-    assigned_facility_type = models.IntegerField(choices=FACILITY_TYPES, default=None, null=True)
+    assigned_facility_type = models.IntegerField(choices=FACILITY_TYPES,
+                                                 default=None,
+                                                 null=True)
     assigned_facility = models.ForeignKey(
-        "Facility", on_delete=models.SET_NULL, null=True, related_name="assigned_facility"
+        "Facility",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="assigned_facility",
     )
-    patient = models.ForeignKey("PatientRegistration", on_delete=models.CASCADE, related_name="patient")
+    patient = models.ForeignKey("PatientRegistration",
+                                on_delete=models.CASCADE,
+                                related_name="patient")
     emergency = models.BooleanField(default=False)
-    is_up_shift = models.BooleanField(default=False)  # False for Down , True for UP
+    is_up_shift = models.BooleanField(
+        default=False)  # False for Down , True for UP
     reason = models.TextField(default="", blank=True)
     vehicle_preference = models.TextField(default="", blank=True)
-    preferred_vehicle_choice = models.IntegerField(choices=VEHICLE_CHOICES, default=None, null=True)
+    preferred_vehicle_choice = models.IntegerField(choices=VEHICLE_CHOICES,
+                                                   default=None,
+                                                   null=True)
     comments = models.TextField(default="", blank=True)
     refering_facility_contact_name = models.TextField(default="", blank=True)
     refering_facility_contact_number = models.CharField(
-        max_length=14, validators=[phone_number_regex], default="", blank=True
-    )
+        max_length=14, validators=[phone_number_regex], default="", blank=True)
     is_kasp = models.BooleanField(default=False)
-    status = models.IntegerField(choices=SHIFTING_STATUS_CHOICES, default=10, null=False, blank=False)
+    status = models.IntegerField(choices=SHIFTING_STATUS_CHOICES,
+                                 default=10,
+                                 null=False,
+                                 blank=False)
 
-    breathlessness_level = models.IntegerField(choices=BREATHLESSNESS_CHOICES, default=10, null=False, blank=False)
+    breathlessness_level = models.IntegerField(choices=BREATHLESSNESS_CHOICES,
+                                               default=10,
+                                               null=False,
+                                               blank=False)
 
     is_assigned_to_user = models.BooleanField(default=False)
-    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="shifting_assigned_to",)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="shifting_created_by",)
+    assigned_to = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="shifting_assigned_to",
+    )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="shifting_created_by",
+    )
     last_edited_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, related_name="shifting_last_edited_by"
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="shifting_last_edited_by",
     )
 
     CSV_MAPPING = {
@@ -111,24 +139,35 @@ class ShiftingRequest(FacilityBaseModel):
     def has_read_permission(request):
         return True
 
-    def has_object_read_permission(self, request):
+    @staticmethod
+    def has_object_read_permission(request):
         return True
 
-    def has_object_write_permission(self, request):
+    @staticmethod
+    def has_object_write_permission(request):
         if request.user.user_type in READ_ONLY_USER_TYPES:
             return False
         return True
 
-    def has_object_transfer_permission(self, request):
+    @staticmethod
+    def has_object_transfer_permission(request):
         return True
 
-    def has_object_update_permission(self, request):
+    @staticmethod
+    def has_object_update_permission(request):
         if request.user.user_type in READ_ONLY_USER_TYPES:
             return False
         return True
 
 
 class ShiftingRequestComment(FacilityBaseModel):
-    request = models.ForeignKey(ShiftingRequest, on_delete=models.PROTECT, null=False, blank=False)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,)
+    request = models.ForeignKey(ShiftingRequest,
+                                on_delete=models.PROTECT,
+                                null=False,
+                                blank=False)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+    )
     comment = models.TextField(default="", blank=True)

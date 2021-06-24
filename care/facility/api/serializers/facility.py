@@ -33,13 +33,18 @@ class FacilityBareMinimumSerializer(serializers.ModelSerializer):
 class FacilityBasicInfoSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source="external_id", read_only=True)
     ward_object = WardSerializer(source="ward", read_only=True)
-    local_body_object = LocalBodySerializer(source="local_body", read_only=True)
+    local_body_object = LocalBodySerializer(source="local_body",
+                                            read_only=True)
     district_object = DistrictSerializer(source="district", read_only=True)
     state_object = StateSerializer(source="state", read_only=True)
     facility_type = serializers.SerializerMethodField()
 
-    def get_facility_type(self, facility):
-        return {"id": facility.facility_type, "name": facility.get_facility_type_display()}
+    @staticmethod
+    def get_facility_type(facility):
+        return {
+            "id": facility.facility_type,
+            "name": facility.get_facility_type_display(),
+        }
 
     class Meta:
         model = Facility
