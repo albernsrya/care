@@ -84,7 +84,8 @@ class PatientContactDetailsSerializer(serializers.ModelSerializer):
         model = PatientContactDetails
         exclude = ("patient",)
 
-    def validate_patient_in_contact(self, value):
+    @staticmethod
+    def validate_patient_in_contact(value):
         if value:
             value = PatientRegistration.objects.get(external_id=value)
         return value
@@ -155,12 +156,14 @@ class PatientDetailSerializer(PatientListSerializer):
     #         return None
     #     return PatientConsultationSerializer(last_consultation).data
 
-    def validate_facility(self, value):
+    @staticmethod
+    def validate_facility(value):
         if value is not None and Facility.objects.filter(id=value).first() is None:
             raise serializers.ValidationError("facility not found")
         return value
 
-    def validate_countries_travelled(self, value):
+    @staticmethod
+    def validate_countries_travelled(value):
         if not value:
             value = []
         if not isinstance(value, list):

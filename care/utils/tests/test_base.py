@@ -280,7 +280,8 @@ class TestBase(APITestCase):
         response.update(self.get_state_representation(getattr(obj, "state", None)))
         return response
 
-    def get_local_body_representation(self, local_body: LocalBody):
+    @staticmethod
+    def get_local_body_representation(local_body: LocalBody):
         if local_body is None:
             return {"local_body": None, "local_body_object": None}
         else:
@@ -293,7 +294,8 @@ class TestBase(APITestCase):
                 },
             }
 
-    def get_district_representation(self, district: District):
+    @staticmethod
+    def get_district_representation(district: District):
         if district is None:
             return {"district": None, "district_object": None}
         return {
@@ -301,7 +303,8 @@ class TestBase(APITestCase):
             "district_object": {"id": district.id, "name": district.name, "state": district.state.id,},
         }
 
-    def get_state_representation(self, state: State):
+    @staticmethod
+    def get_state_representation(state: State):
         if state is None:
             return {"state": None, "state_object": None}
         return {"state": state.id, "state_object": {"id": state.id, "name": state.name}}
@@ -311,7 +314,8 @@ class TestBase(APITestCase):
         second_dict = self._convert_to_matchable_types(second.copy())
         return super(TestBase, self).assertDictEqual(first_dict, second_dict, msg)
 
-    def _convert_to_matchable_types(self, d):
+    @staticmethod
+    def _convert_to_matchable_types(d):
         def dict_to_matching_type(d: dict):
             return {k: to_matching_type(k, v) for k, v in d.items()}
 

@@ -84,7 +84,8 @@ class AssetViewSet(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateM
 
     @swagger_auto_schema(responses={200: UserDefaultAssetLocationSerializer()})
     @action(detail=False, methods=["GET"])
-    def get_default_user_location(self, request, *args, **kwargs):
+    @staticmethod
+    def get_default_user_location(request, *args, **kwargs):
         obj = get_object_or_404(UserDefaultAssetLocation.objects.filter(user=request.user))
         return Response(UserDefaultAssetLocationSerializer(obj).data)
 
@@ -93,7 +94,8 @@ class AssetViewSet(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateM
 
     @swagger_auto_schema(request_body=DummyAssetSerializer, responses={200: UserDefaultAssetLocationSerializer()})
     @action(detail=False, methods=["POST"])
-    def set_default_user_location(self, request, *args, **kwargs):
+    @staticmethod
+    def set_default_user_location(request, *args, **kwargs):
         if "location" not in request.data:
             raise ValidationError({"location": "is required"})
         allowed_locations = get_asset_location_queryset(request.user)

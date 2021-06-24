@@ -120,7 +120,8 @@ class FacilityInventoryLogSerializer(serializers.ModelSerializer):
 
         return instance
 
-    def set_burn_rate(self, facility, item):
+    @staticmethod
+    def set_burn_rate(facility, item):
         set_burn_rate(facility, item)
 
 

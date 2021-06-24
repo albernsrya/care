@@ -111,18 +111,22 @@ class ShiftingRequest(FacilityBaseModel):
     def has_read_permission(request):
         return True
 
-    def has_object_read_permission(self, request):
+    @staticmethod
+    def has_object_read_permission(request):
         return True
 
-    def has_object_write_permission(self, request):
+    @staticmethod
+    def has_object_write_permission(request):
         if request.user.user_type in READ_ONLY_USER_TYPES:
             return False
         return True
 
-    def has_object_transfer_permission(self, request):
+    @staticmethod
+    def has_object_transfer_permission(request):
         return True
 
-    def has_object_update_permission(self, request):
+    @staticmethod
+    def has_object_update_permission(request):
         if request.user.user_type in READ_ONLY_USER_TYPES:
             return False
         return True

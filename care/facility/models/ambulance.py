@@ -76,7 +76,8 @@ class Ambulance(FacilityBaseModel):
     def has_write_permission(request):
         return True
 
-    def has_object_write_permission(self, request):
+    @staticmethod
+    def has_object_write_permission(request):
         return request.user.is_superuser
 
     def has_object_update_permission(self, request):

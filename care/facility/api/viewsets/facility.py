@@ -116,7 +116,8 @@ class FacilityViewSet(
         return super(FacilityViewSet, self).list(request, *args, **kwargs)
 
     @action(methods=["GET"], detail=True)
-    def get_users(self, request, external_id):
+    @staticmethod
+    def get_users(request, external_id):
         user_type_filter = None
         if "user_type" in request.GET:
             if request.GET["user_type"] in User.TYPE_VALUE_MAP:

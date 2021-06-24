@@ -65,7 +65,8 @@ class UserCreateSerializer(SignUpSerializer):
             "user_permissions",
         )
 
-    def validate_facilities(self, facility_ids):
+    @staticmethod
+    def validate_facilities(facility_ids):
         if facility_ids:
             if len(facility_ids) != Facility.objects.filter(external_id__in=facility_ids).count():
                 available_facility_ids = Facility.objects.filter(external_id__in=facility_ids).values_list(
@@ -141,7 +142,8 @@ class UserCreateSerializer(SignUpSerializer):
 
         return validated
 
-    def facility_query(self, user):
+    @staticmethod
+    def facility_query(user):
         queryset = Facility.objects.all()
         if user.is_superuser:
             pass

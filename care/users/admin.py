@@ -13,7 +13,8 @@ User = get_user_model()
 
 
 class ExportCsvMixin:
-    def export_as_csv(self, request, queryset):
+    @staticmethod
+    def export_as_csv(request, queryset):
 
         queryset = User.objects.filter(is_superuser=False).values(*User.CSV_MAPPING.keys())
         return render_to_csv_response(

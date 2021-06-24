@@ -8,7 +8,8 @@ class TestPatientConsultationApi(TestBase):
     def get_base_url(self):
         return "/api/v1/consultation"
 
-    def get_list_representation_facility(self, facility):
+    @staticmethod
+    def get_list_representation_facility(facility):
         return {
             "id": str(facility.external_id),
             "name": facility.name,

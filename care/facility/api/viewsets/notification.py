@@ -41,7 +41,8 @@ class NotificationViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, 
         return self.queryset.filter(intended_for=user)
 
     @action(detail=False, methods=["GET"], permission_classes=[IsAuthenticatedOrReadOnly])
-    def public_key(self, request, *args, **kwargs):
+    @staticmethod
+    def public_key(request, *args, **kwargs):
         return Response({"public_key": settings.VAPID_PUBLIC_KEY})
 
     class DummyNotificationSerializer(Serializer):  # Dummy for Spec
@@ -50,7 +51,8 @@ class NotificationViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, 
 
     @swagger_auto_schema(request_body=DummyNotificationSerializer, responses={204: "Notification Processed"})
     @action(detail=False, methods=["POST"])
-    def notify(self, request, *args, **kwargs):
+    @staticmethod
+    def notify(request, *args, **kwargs):
         user = request.user
         if "facility" not in request.data:
             raise ValidationError({"facility": "is required"})

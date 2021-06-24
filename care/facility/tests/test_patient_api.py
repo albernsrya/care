@@ -70,18 +70,21 @@ class TestPatient(TestBase):
             "date_of_receipt_of_information": patient.date_of_receipt_of_information,
         }
 
-    def _get_medical_history_representation(self, history):
+    @staticmethod
+    def _get_medical_history_representation(history):
         if isinstance(history, list):
             return history
         else:
             return [{"disease": h.get_disease_display(), "details": h.details} for h in history.all()]
 
-    def _get_disease_state_representation(self, disease_state):
+    @staticmethod
+    def _get_disease_state_representation(disease_state):
         if isinstance(disease_state, int):
             return DiseaseStatusEnum(disease_state).name
         return disease_state
 
-    def _get_metainfo_representation(self, patient: PatientRegistration):
+    @staticmethod
+    def _get_metainfo_representation(patient: PatientRegistration):
         if not patient.meta_info:
             return None
         return {

@@ -166,7 +166,8 @@ class PatientTestGroupAdmin(admin.ModelAdmin):
 
 
 class ExportCsvMixin:
-    def export_as_csv(self, request, queryset):
+    @staticmethod
+    def export_as_csv(request, queryset):
 
         queryset = FacilityUser.objects.all().values(*FacilityUser.CSV_MAPPING.keys())
         return render_to_csv_response(

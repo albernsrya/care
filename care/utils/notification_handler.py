@@ -110,14 +110,16 @@ class NotificationGenerator:
         self.defer_notifications = defer_notifications
         self.generate_extra_users()
 
-    def serialize_extra_data(self, extra_data):
+    @staticmethod
+    def serialize_extra_data(extra_data):
         if not extra_data:
             return None
         for key in extra_data:
             extra_data[key] = {"model_name": extra_data[key].__class__.__name__, "model_id": extra_data[key].id}
         return extra_data
 
-    def deserialize_extra_data(self, extra_data):
+    @staticmethod
+    def deserialize_extra_data(extra_data):
         if not extra_data:
             return None
         for key in extra_data:
@@ -214,7 +216,8 @@ class NotificationGenerator:
                 )
         return message
 
-    def _get_default_whatsapp_config(self):
+    @staticmethod
+    def _get_default_whatsapp_config():
         return {
             Notification.Event.PATIENT_CONSULTATION_ASSIGNMENT.value: {
                 "message": "You have been assigned to a new patient in care platform for specialist teleconsultation.",
@@ -238,7 +241,8 @@ class NotificationGenerator:
                 self.caused_object.patient.emergency_phone_number,
             ]
 
-    def _get_default_medium(self):
+    @staticmethod
+    def _get_default_medium():
         return [Notification.Medium.SYSTEM.value]
 
     def generate_cause_objects(self):
@@ -306,7 +310,8 @@ class NotificationGenerator:
         notification.save()
         return notification
 
-    def send_webpush_user(self, user, message):
+    @staticmethod
+    def send_webpush_user(user, message):
         try:
             if user.pf_endpoint and user.pf_p256dh and user.pf_auth:
                 webpush(

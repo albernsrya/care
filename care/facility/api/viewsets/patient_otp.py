@@ -22,7 +22,8 @@ class PatientMobileOTPViewSet(
     queryset = PatientMobileOTP.objects.all()
 
     @action(detail=False, methods=["POST"])
-    def login(self, request):
+    @staticmethod
+    def login(request):
         if "phone_number" not in request.data or "otp" not in request.data:
             raise ValidationError("Request Incomplete")
         phone_number = request.data["phone_number"]

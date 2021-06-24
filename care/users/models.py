@@ -248,7 +248,8 @@ class User(AbstractUser):
             # No user_type passed, the view shall raise a 400
             return True
 
-    def has_object_write_permission(self, request):
+    @staticmethod
+    def has_object_write_permission(request):
         return request.user.is_superuser
 
     def has_object_update_permission(self, request):

@@ -45,8 +45,9 @@ class UserFilterSet(filters.FilterSet):
     last_login = filters.DateFromToRangeFilter(field_name="last_login")
     district_id = filters.NumberFilter(field_name="district_id", lookup_expr="exact")
 
+    @staticmethod
     def get_user_type(
-        self, queryset, field_name, value,
+        queryset, field_name, value,
     ):
         if value:
             if value in INVERSE_USER_TYPE:
@@ -107,7 +108,8 @@ class UserViewSet(
             return UserSerializer
 
     @action(detail=False, methods=["GET"])
-    def getcurrentuser(self, request):
+    @staticmethod
+    def getcurrentuser(request):
         return Response(
             status=status.HTTP_200_OK, data=UserSerializer(request.user, context={"request": request}).data,
         )
@@ -135,7 +137,8 @@ class UserViewSet(
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=["POST"])
-    def add_user(self, request, *args, **kwargs):
+    @staticmethod
+    def add_user(request, *args, **kwargs):
         password = request.data.pop("password", User.objects.make_random_password(length=8))
         serializer = UserCreateSerializer(
             data={**request.data, "password": password}, context={"created_by": request.user},
@@ -150,7 +153,8 @@ class UserViewSet(
         # response_data["password"] = password
         return Response(data=response_data, status=status.HTTP_201_CREATED)
 
-    def has_facility_permission(self, user, facility):
+    @staticmethod
+    def has_facility_permission(user, facility):
         return (
             user.is_superuser
             or (facility and user in facility.users.all())
@@ -165,10 +169,12 @@ class UserViewSet(
             or (user.user_type >= User.TYPE_VALUE_MAP["StateLabAdmin"] and (facility and user.state == facility.state))
         )
 
-    def has_user_type_permission_elevation(self, init_user, dest_user):
+    @staticmethod
+    def has_user_type_permission_elevation(init_user, dest_user):
         return init_user.user_type >= dest_user.user_type
 
-    def check_facility_user_exists(self, user, facility):
+    @staticmethod
+    def check_facility_user_exists(user, facility):
         return FacilityUser.objects.filter(facility=facility, user=user).exists()
 
     @action(detail=True, methods=["GET"], permission_classes=[IsAuthenticated])
@@ -221,7 +227,8 @@ class UserViewSet(
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["PATCH", "GET"], permission_classes=[IsAuthenticated])
-    def pnconfig(self, request, *args, **kwargs):
+    @staticmethod
+    def pnconfig(request, *args, **kwargs):
         user = request.user
         if request.method == "GET":
             return Response({"pf_endpoint": user.pf_endpoint, "pf_p256dh": user.pf_p256dh, "pf_auth": user.pf_auth})
