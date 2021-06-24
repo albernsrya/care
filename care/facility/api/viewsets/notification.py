@@ -8,7 +8,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from rest_framework.serializers import Serializer, UUIDField, CharField
+from rest_framework.serializers import CharField, Serializer, UUIDField
 from rest_framework.viewsets import GenericViewSet
 
 from care.facility.api.serializers.notification import NotificationSerializer
@@ -28,19 +28,23 @@ class NotificationFilter(filters.FilterSet):
     medium_sent = CareChoiceFilter(choice_dict=medium_choices)
 
 
-class NotificationViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
-    queryset = Notification.objects.all().select_related("intended_for", "caused_by").order_by("-created_date")
+class NotificationViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin,
+                          GenericViewSet):
+    queryset = (Notification.objects.all().select_related(
+        "intended_for", "caused_by").order_by("-created_date"))
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = "external_id"
-    filter_backends = (filters.DjangoFilterBackend,)
+    filter_backends = (filters.DjangoFilterBackend, )
     filterset_class = NotificationFilter
 
     def get_queryset(self):
         user = self.request.user
         return self.queryset.filter(intended_for=user)
 
-    @action(detail=False, methods=["GET"], permission_classes=[IsAuthenticatedOrReadOnly])
+    @action(detail=False,
+            methods=["GET"],
+            permission_classes=[IsAuthenticatedOrReadOnly])
     @staticmethod
     def public_key(request, *args, **kwargs):
         return Response({"public_key": settings.VAPID_PUBLIC_KEY})
@@ -49,7 +53,10 @@ class NotificationViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, 
         facility = UUIDField(required=True)
         message = CharField(required=True)
 
-    @swagger_auto_schema(request_body=DummyNotificationSerializer, responses={204: "Notification Processed"})
+    @swagger_auto_schema(
+        request_body=DummyNotificationSerializer,
+        responses={204: "Notification Processed"},
+    )
     @action(detail=False, methods=["POST"])
     @staticmethod
     def notify(request, *args, **kwargs):
@@ -59,7 +66,8 @@ class NotificationViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, 
         if "message" not in request.data:
             raise ValidationError({"mesasge": "is required"})
         facilities = get_facility_queryset(user)
-        facility = get_object_or_404(facilities.filter(external_id=request.data["facility"]))
+        facility = get_object_or_404(
+            facilities.filter(external_id=request.data["facility"]))
         NotificationGenerator(
             event_type=Notification.EventType.CUSTOM_MESSAGE,
             event=Notification.Event.MESSAGE,

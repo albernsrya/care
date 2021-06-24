@@ -120,7 +120,8 @@ class Ward(models.Model):
 class CustomUserManager(UserManager):
     def get_queryset(self):
         qs = super().get_queryset()
-        return qs.filter(deleted=False).select_related("local_body", "district", "state")
+        return qs.filter(deleted=False).select_related("local_body",
+                                                       "district", "state")
 
     def create_superuser(self, username, email, password, **extra_fields):
         district = District.objects.all()[0]
@@ -129,7 +130,8 @@ class CustomUserManager(UserManager):
         extra_fields["phone_number"] = "+919696969696"
         extra_fields["gender"] = 3
         extra_fields["user_type"] = 40
-        return super().create_superuser(username, email, password, **extra_fields)
+        return super().create_superuser(username, email, password,
+                                        **extra_fields)
 
 
 class Skill(BaseModel):
@@ -142,15 +144,27 @@ class Skill(BaseModel):
 
 class UsernameValidator(UnicodeUsernameValidator):
     regex = r"^[\w.@+-]+[^.@+_-]$"
-    message = _("Please enter letters, digits and @ . + - _ only and username should not end with @ . + - or _")
+    message = _(
+        "Please enter letters, digits and @ . + - _ only and username should not end with @ . + - or _"
+    )
 
 
 class UserSkill(BaseModel):
-    user = models.ForeignKey("User", on_delete=models.CASCADE, null=True, blank=True)
-    skill = models.ForeignKey("Skill", on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey("User",
+                             on_delete=models.CASCADE,
+                             null=True,
+                             blank=True)
+    skill = models.ForeignKey("Skill",
+                              on_delete=models.CASCADE,
+                              null=True,
+                              blank=True)
 
     class Meta:
-        indexes = [PartialIndex(fields=["skill", "user"], unique=True, where=PQ(deleted=False))]
+        indexes = [
+            PartialIndex(fields=["skill", "user"],
+                         unique=True,
+                         where=PQ(deleted=False))
+        ]
 
 
 class User(AbstractUser):
@@ -159,9 +173,12 @@ class User(AbstractUser):
         _("username"),
         max_length=150,
         unique=True,
-        help_text=_("150 characters or fewer. Letters, digits and @/./+/-/_ only."),
+        help_text=_(
+            "150 characters or fewer. Letters, digits and @/./+/-/_ only."),
         validators=[username_validator],
-        error_messages={"unique": _("A user with that username already exists.")},
+        error_messages={
+            "unique": _("A user with that username already exists.")
+        },
     )
 
     TYPE_VALUE_MAP = {
@@ -188,18 +205,37 @@ class User(AbstractUser):
 
     user_type = models.IntegerField(choices=TYPE_CHOICES, blank=False)
 
-    ward = models.ForeignKey(Ward, on_delete=models.PROTECT, null=True, blank=True)
-    local_body = models.ForeignKey(LocalBody, on_delete=models.PROTECT, null=True, blank=True)
-    district = models.ForeignKey(District, on_delete=models.PROTECT, null=True, blank=True)
-    state = models.ForeignKey(State, on_delete=models.PROTECT, null=True, blank=True)
+    ward = models.ForeignKey(Ward,
+                             on_delete=models.PROTECT,
+                             null=True,
+                             blank=True)
+    local_body = models.ForeignKey(LocalBody,
+                                   on_delete=models.PROTECT,
+                                   null=True,
+                                   blank=True)
+    district = models.ForeignKey(District,
+                                 on_delete=models.PROTECT,
+                                 null=True,
+                                 blank=True)
+    state = models.ForeignKey(State,
+                              on_delete=models.PROTECT,
+                              null=True,
+                              blank=True)
 
-    phone_number = models.CharField(max_length=14, validators=[phone_number_regex])
+    phone_number = models.CharField(max_length=14,
+                                    validators=[phone_number_regex])
     alt_phone_number = models.CharField(
-        max_length=14, validators=[phone_number_regex], default=None, blank=True, null=True
+        max_length=14,
+        validators=[phone_number_regex],
+        default=None,
+        blank=True,
+        null=True,
     )
 
     gender = models.IntegerField(choices=GENDER_CHOICES, blank=False)
-    age = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(100)])
+    age = models.IntegerField(
+        validators=[MinValueValidator(1),
+                    MaxValueValidator(100)])
     skills = models.ManyToManyField("Skill", through=UserSkill)
     verified = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)
@@ -241,9 +277,11 @@ class User(AbstractUser):
     @staticmethod
     def has_write_permission(request):
         try:
-            return int(request.data["user_type"]) <= User.TYPE_VALUE_MAP["Volunteer"]
+            return int(
+                request.data["user_type"]) <= User.TYPE_VALUE_MAP["Volunteer"]
         except TypeError:
-            return User.TYPE_VALUE_MAP[request.data["user_type"]] <= User.TYPE_VALUE_MAP["Volunteer"]
+            return (User.TYPE_VALUE_MAP[request.data["user_type"]] <=
+                    User.TYPE_VALUE_MAP["Volunteer"])
         except KeyError:
             # No user_type passed, the view shall raise a 400
             return True
@@ -257,9 +295,8 @@ class User(AbstractUser):
             return True
         if not self == request.user:
             return False
-        if (request.data.get("district") or request.data.get("state")) and self.user_type >= User.TYPE_VALUE_MAP[
-            "DistrictLabAdmin"
-        ]:
+        if (request.data.get("district") or request.data.get("state")
+            ) and self.user_type >= User.TYPE_VALUE_MAP["DistrictLabAdmin"]:
             # District/state admins shouldn't be able to edit their district/state, that'll practically give them
             # access to everything
             return False

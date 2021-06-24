@@ -11,12 +11,8 @@ from rest_framework.response import Response
 from rest_framework.serializers import Serializer, UUIDField
 from rest_framework.viewsets import GenericViewSet
 
-from care.facility.api.serializers.asset import (
-    AssetLocationSerializer,
-    AssetSerializer,
-    AssetTransactionSerializer,
-    UserDefaultAssetLocationSerializer,
-)
+from care.facility.api.serializers.asset import (AssetLocationSerializer, AssetSerializer, AssetTransactionSerializer,
+                                                 UserDefaultAssetLocationSerializer)
 from care.facility.models import facility
 from care.facility.models.asset import Asset, AssetLocation, AssetTransaction, UserDefaultAssetLocation
 from care.users.models import User
@@ -25,11 +21,17 @@ from care.utils.queryset.asset_location import get_asset_location_queryset
 from care.utils.queryset.facility import get_facility_queryset
 
 
-class AssetLocationViewSet(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, GenericViewSet):
+class AssetLocationViewSet(
+        ListModelMixin,
+        RetrieveModelMixin,
+        CreateModelMixin,
+        UpdateModelMixin,
+        GenericViewSet,
+):
     queryset = AssetLocation.objects.all().select_related("facility")
     serializer_class = AssetLocationSerializer
     lookup_field = "external_id"
-    filter_backends = (drf_filters.SearchFilter,)
+    filter_backends = (drf_filters.SearchFilter, )
     search_fields = ["name"]
 
     def get_queryset(self):
@@ -45,23 +47,33 @@ class AssetLocationViewSet(ListModelMixin, RetrieveModelMixin, CreateModelMixin,
             allowed_facilities = get_accessible_facilities(user)
             queryset = queryset.filter(facility__id__in=allowed_facilities)
 
-        return queryset.filter(facility__external_id=self.kwargs["facility_external_id"])
+        return queryset.filter(
+            facility__external_id=self.kwargs["facility_external_id"])
 
     def get_facility(self):
         facilities = get_facility_queryset(self.request.user)
-        return get_object_or_404(facilities.filter(external_id=self.kwargs["facility_external_id"]))
+        return get_object_or_404(
+            facilities.filter(external_id=self.kwargs["facility_external_id"]))
 
     def perform_create(self, serializer):
         serializer.save(facility=self.get_facility())
 
 
 class AssetFilter(filters.FilterSet):
-    facility = filters.UUIDFilter(field_name="current_location__facility__external_id")
+    facility = filters.UUIDFilter(
+        field_name="current_location__facility__external_id")
     location = filters.UUIDFilter(field_name="current_location__external_id")
 
 
-class AssetViewSet(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, GenericViewSet):
-    queryset = Asset.objects.all().select_related("current_location", "current_location__facility")
+class AssetViewSet(
+        ListModelMixin,
+        RetrieveModelMixin,
+        CreateModelMixin,
+        UpdateModelMixin,
+        GenericViewSet,
+):
+    queryset = Asset.objects.all().select_related(
+        "current_location", "current_location__facility")
     serializer_class = AssetSerializer
     lookup_field = "external_id"
     filter_backends = (filters.DjangoFilterBackend, drf_filters.SearchFilter)
@@ -74,25 +86,32 @@ class AssetViewSet(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateM
         if user.is_superuser:
             pass
         elif user.user_type >= User.TYPE_VALUE_MAP["StateLabAdmin"]:
-            queryset = queryset.filter(current_location__facility__state=user.state)
+            queryset = queryset.filter(
+                current_location__facility__state=user.state)
         elif user.user_type >= User.TYPE_VALUE_MAP["DistrictLabAdmin"]:
-            queryset = queryset.filter(current_location__facility__district=user.district)
+            queryset = queryset.filter(
+                current_location__facility__district=user.district)
         else:
             allowed_facilities = get_accessible_facilities(user)
-            queryset = queryset.filter(current_location__facility__id__in=allowed_facilities)
+            queryset = queryset.filter(
+                current_location__facility__id__in=allowed_facilities)
         return queryset
 
     @swagger_auto_schema(responses={200: UserDefaultAssetLocationSerializer()})
     @action(detail=False, methods=["GET"])
     @staticmethod
     def get_default_user_location(request, *args, **kwargs):
-        obj = get_object_or_404(UserDefaultAssetLocation.objects.filter(user=request.user))
+        obj = get_object_or_404(
+            UserDefaultAssetLocation.objects.filter(user=request.user))
         return Response(UserDefaultAssetLocationSerializer(obj).data)
 
     class DummyAssetSerializer(Serializer):  # Dummy for Spec
         location = UUIDField(required=True)
 
-    @swagger_auto_schema(request_body=DummyAssetSerializer, responses={200: UserDefaultAssetLocationSerializer()})
+    @swagger_auto_schema(
+        request_body=DummyAssetSerializer,
+        responses={200: UserDefaultAssetLocationSerializer()},
+    )
     @action(detail=False, methods=["POST"])
     @staticmethod
     def set_default_user_location(request, *args, **kwargs):
@@ -100,8 +119,10 @@ class AssetViewSet(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateM
             raise ValidationError({"location": "is required"})
         allowed_locations = get_asset_location_queryset(request.user)
         try:
-            location = allowed_locations.get(external_id=request.data["location"])
-            obj = UserDefaultAssetLocation.objects.filter(user=request.user).first()
+            location = allowed_locations.get(
+                external_id=request.data["location"])
+            obj = UserDefaultAssetLocation.objects.filter(
+                user=request.user).first()
             if not obj:
                 obj = UserDefaultAssetLocation()
                 obj.user = request.user
@@ -116,12 +137,18 @@ class AssetTransactionFilter(filters.FilterSet):
     asset = filters.UUIDFilter(field_name="asset__external_id")
 
 
-class AssetTransactionViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
+class AssetTransactionViewSet(ListModelMixin, RetrieveModelMixin,
+                              GenericViewSet):
     queryset = AssetTransaction.objects.all().select_related(
-        "from_location", "to_location", "from_location__facility", "to_location__facility", "performed_by", "asset"
+        "from_location",
+        "to_location",
+        "from_location__facility",
+        "to_location__facility",
+        "performed_by",
+        "asset",
     )
     serializer_class = AssetTransactionSerializer
-    filter_backends = (filters.DjangoFilterBackend,)
+    filter_backends = (filters.DjangoFilterBackend, )
     filterset_class = AssetTransactionFilter
 
     def get_queryset(self):
@@ -131,17 +158,15 @@ class AssetTransactionViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet
             pass
         elif user.user_type >= User.TYPE_VALUE_MAP["StateLabAdmin"]:
             queryset = queryset.filter(
-                Q(from_location__facility__state=user.state) | Q(to_location__facility__state=user.state)
-            )
+                Q(from_location__facility__state=user.state)
+                | Q(to_location__facility__state=user.state))
         elif user.user_type >= User.TYPE_VALUE_MAP["DistrictLabAdmin"]:
             queryset = queryset.filter(
-                Q(from_location__facility__district=user.district) | Q(to_location__facility__district=user.district)
-            )
+                Q(from_location__facility__district=user.district)
+                | Q(to_location__facility__district=user.district))
         else:
             allowed_facilities = get_accessible_facilities(user)
             queryset = queryset.filter(
                 Q(from_location__facility__id__in=allowed_facilities)
-                | Q(to_location__facility__id__in=allowed_facilities)
-            )
+                | Q(to_location__facility__id__in=allowed_facilities))
         return queryset
-
