@@ -134,7 +134,6 @@ UPT					String		3
 Stool OB					String		3
 Stool Microscopy					String		3"""
 
-
 investigation_groups = """Id	Name
 1	Haematology 
 2	Biochemistry test
@@ -189,4 +188,7 @@ class Migration(migrations.Migration):
         ("facility", "0219_remove_investigationsession_session"),
     ]
 
-    operations = [migrations.RunPython(populate_investigations, reverse_code=reverse_populate_investigations)]
+    operations = [
+        migrations.RunPython(populate_investigations,
+                             reverse_code=reverse_populate_investigations)
+    ]

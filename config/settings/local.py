@@ -9,11 +9,19 @@ from .base import env
 DEBUG = False
 ALLOWED_HOSTS = ["*"]
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
-SECRET_KEY = env("DJANGO_SECRET_KEY", default="eXZQzOzx8gV38rDG0Z0fFZWweUGl3LwMZ9aTKqJiXQTI0nKMh0Z7sbHfqT8KFEnd",)
+SECRET_KEY = env(
+    "DJANGO_SECRET_KEY",
+    default="eXZQzOzx8gV38rDG0Z0fFZWweUGl3LwMZ9aTKqJiXQTI0nKMh0Z7sbHfqT8KFEnd",
+)
 # The first key will be used to encrypt all new data, and decryption of existing values will be attempted
 # with all given keys in order. This is useful for key rotation: place a new key at the head of the list
 # for use with all new or changed data, but existing values encrypted with old keys will still be accessible
-FERNET_KEYS = [env("FERNET_SECRET_KEY_1", default="f685a83652d782188382a3f2696e623a764c8012b1488d2fc5bc6460cddc7878")]
+FERNET_KEYS = [
+    env(
+        "FERNET_SECRET_KEY_1",
+        default="f685a83652d782188382a3f2696e623a764c8012b1488d2fc5bc6460cddc7878",
+    )
+]
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hostsRUNSERVER_PLUS_PRINT_SQL_TRUNCATE
 
 # CACHES
@@ -32,7 +40,6 @@ CACHES = {
     }
 }
 
-
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-host
@@ -43,7 +50,8 @@ EMAIL_PORT = 1025
 # WhiteNoise
 # ------------------------------------------------------------------------------
 # http://whitenoise.evans.io/en/latest/django.html#using-whitenoise-in-development
-INSTALLED_APPS = ["whitenoise.runserver_nostatic"] + INSTALLED_APPS  # noqa F405
+INSTALLED_APPS = ["whitenoise.runserver_nostatic"
+                  ] + INSTALLED_APPS  # noqa F405
 
 # django-debug-toolbar
 # ------------------------------------------------------------------------------
@@ -89,14 +97,16 @@ AUDIT_LOG_ENABLED = True
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#task-eager-propagates
 CELERY_TASK_EAGER_PROPAGATES = True
 
-
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Simple JWT
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=env("JWT_ACCESS_TOKEN_LIFETIME", default=1000000000)),
-    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=env("JWT_REFRESH_TOKEN_LIFETIME", default=3000000000)),
-    "ROTATE_REFRESH_TOKENS": True,
+    "ACCESS_TOKEN_LIFETIME":
+    timedelta(minutes=env("JWT_ACCESS_TOKEN_LIFETIME", default=1000000000)),
+    "REFRESH_TOKEN_LIFETIME":
+    timedelta(minutes=env("JWT_REFRESH_TOKEN_LIFETIME", default=3000000000)),
+    "ROTATE_REFRESH_TOKENS":
+    True,
 }
 
 RUNSERVER_PLUS_PRINT_SQL_TRUNCATE = 100000

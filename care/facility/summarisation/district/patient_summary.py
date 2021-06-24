@@ -10,16 +10,8 @@ from rest_framework.mixins import ListModelMixin
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.viewsets import GenericViewSet
 
-from care.facility.models import (
-    ADMIT_CHOICES,
-    DistrictScopedSummary,
-    Facility,
-    FacilityRelatedSummary,
-    PatientConsultation,
-    PatientRegistration,
-    patient,
-)
-
+from care.facility.models import (ADMIT_CHOICES, DistrictScopedSummary, Facility, FacilityRelatedSummary,
+                                  PatientConsultation, PatientRegistration, patient)
 from care.users.models import District, LocalBody
 
 
@@ -33,7 +25,8 @@ class DistrictSummarySerializer(serializers.ModelSerializer):
 
 
 class DistrictSummaryFilter(filters.FilterSet):
-    start_date = filters.DateFilter(field_name="created_date", lookup_expr="gte")
+    start_date = filters.DateFilter(field_name="created_date",
+                                    lookup_expr="gte")
     end_date = filters.DateFilter(field_name="created_date", lookup_expr="lte")
     district = filters.NumberFilter(field_name="district__id")
     state = filters.NumberFilter(field_name="district__state__id")
@@ -41,15 +34,13 @@ class DistrictSummaryFilter(filters.FilterSet):
 
 class DistrictPatientSummaryViewSet(ListModelMixin, GenericViewSet):
     lookup_field = "external_id"
-    queryset = (
-        DistrictScopedSummary.objects.filter(s_type="PatientSummary")
-        .order_by("-created_date")
-        .select_related("district", "district__state")
-    )
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    queryset = (DistrictScopedSummary.objects.filter(
+        s_type="PatientSummary").order_by("-created_date").select_related(
+            "district", "district__state"))
+    permission_classes = (IsAuthenticatedOrReadOnly, )
     serializer_class = DistrictSummarySerializer
 
-    filter_backends = (filters.DjangoFilterBackend,)
+    filter_backends = (filters.DjangoFilterBackend, )
     filterset_class = DistrictSummaryFilter
 
     @method_decorator(cache_page(60 * 10))
@@ -75,13 +66,16 @@ def DistrictPatientSummary():
             "id": district_object.id,
         }
         for local_body_object in LocalBody.objects.filter(
-            district_id=district_object.id
-        ):
+                district_id=district_object.id):
             district_summary[local_body_object.id] = {
-                "name": local_body_object.name,
-                "code": local_body_object.localbody_code,
-                "total_inactive": PatientRegistration.objects.filter(
-                    is_active=False, local_body_id=local_body_object.id,
+                "name":
+                local_body_object.name,
+                "code":
+                local_body_object.localbody_code,
+                "total_inactive":
+                PatientRegistration.objects.filter(
+                    is_active=False,
+                    local_body_id=local_body_object.id,
                 ).count(),
             }
             patients = PatientRegistration.objects.filter(
@@ -102,22 +96,20 @@ def DistrictPatientSummary():
 
             home_quarantine = Q(last_consultation__suggestion="HI")
 
-            total_patients_home_quarantine = patients.filter(home_quarantine).count()
+            total_patients_home_quarantine = patients.filter(
+                home_quarantine).count()
             district_summary[local_body_object.id][
-                "total_patients_home_quarantine"
-            ] = total_patients_home_quarantine
+                "total_patients_home_quarantine"] = total_patients_home_quarantine
 
             # Apply Date Filters
 
             patients_today = patients.filter(
-                last_consultation__created_date__startswith=now().date()
-            )
+                last_consultation__created_date__startswith=now().date())
 
             # Get Todays Counts
 
             today_patients_home_quarantine = patients_today.filter(
-                home_quarantine
-            ).count()
+                home_quarantine).count()
 
             for admitted_choice in ADMIT_CHOICES:
                 db_value = admitted_choice[0]
@@ -129,34 +121,29 @@ def DistrictPatientSummary():
 
             # Update Anything Extra
             district_summary[local_body_object.id][
-                "today_patients_home_quarantine"
-            ] = today_patients_home_quarantine
+                "today_patients_home_quarantine"] = today_patients_home_quarantine
 
         object_filter = Q(s_type="PatientSummary") & Q(
-            created_date__startswith=now().date()
-        )
-        if (
-            DistrictScopedSummary.objects.filter(district_id=district_object.id)
-            .filter(object_filter)
-            .exists()
-        ):
+            created_date__startswith=now().date())
+        if (DistrictScopedSummary.objects.filter(
+                district_id=district_object.id).filter(object_filter).exists()
+            ):
             district_summary_old = DistrictScopedSummary.objects.filter(
-                object_filter
-            ).get(district_id=district_object.id)
+                object_filter).get(district_id=district_object.id)
             district_summary_old.created_date = now()
             district_summary_old.data.pop("modified_date")
 
             district_summary_old.data = district_summary
             latest_modification_date = now()
-            district_summary_old.data.update(
-                {"modified_date": latest_modification_date.strftime("%d-%m-%Y %H:%M")}
-            )
+            district_summary_old.data.update({
+                "modified_date":
+                latest_modification_date.strftime("%d-%m-%Y %H:%M")
+            })
             district_summary_old.save()
         else:
             modified_date = now()
             district_summary.update(
-                {"modified_date": modified_date.strftime("%d-%m-%Y %H:%M")}
-            )
+                {"modified_date": modified_date.strftime("%d-%m-%Y %H:%M")})
             DistrictScopedSummary(
                 s_type="PatientSummary",
                 district_id=district_object.id,

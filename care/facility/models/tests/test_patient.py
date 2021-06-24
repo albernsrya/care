@@ -8,8 +8,10 @@ class PatientRegistrationTest(TestBase):
     def setUpTestData(cls):
         super().setUpTestData()
         cls.state = State.objects.create(name="tripura")
-        cls.district = District.objects.create(state=cls.state, name="agartala")
-        cls.patient_data = cls.get_patient_data(district=cls.district, state=cls.state)
+        cls.district = District.objects.create(state=cls.state,
+                                               name="agartala")
+        cls.patient_data = cls.get_patient_data(district=cls.district,
+                                                state=cls.state)
         cls.patient = cls._create_patient(cls.patient_data)
 
     @classmethod
@@ -19,9 +21,10 @@ class PatientRegistrationTest(TestBase):
         data.pop("state", "")
         data.pop("district", "")
         data.pop("disease_status", 0)
-        data.update(
-            {"state_id": cls.state.id, "district_id": cls.district.id,}
-        )
+        data.update({
+            "state_id": cls.state.id,
+            "district_id": cls.district.id,
+        })
         return PatientRegistration.objects.create(**data)
 
     def test_disease_state_recovery_is_aliased_to_recovered(self):
@@ -31,4 +34,5 @@ class PatientRegistrationTest(TestBase):
         patient.save(update_fields=["disease_status"])
         patient.refresh_from_db()
 
-        self.assertEqual(patient.disease_status, DiseaseStatusEnum.RECOVERED.value)
+        self.assertEqual(patient.disease_status,
+                         DiseaseStatusEnum.RECOVERED.value)

@@ -6,7 +6,6 @@ from care.users.models import District, State, User
 
 class TestHelper:
     """Initialize objects that will be useful for all other tests"""
-
     @classmethod
     def setup_data(cls):
         """Initialize the data objects to be used for other function"""

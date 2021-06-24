@@ -51,12 +51,11 @@ class AuditLogMiddleware:
 
         dal_request_id = getattr(request, "dal_request_id", None)
         if not dal_request_id:
-            dal_request_id = (
-                f"{request.method.lower()}::{md5(request.path.lower().encode('utf-8')).hexdigest()}::{uuid.uuid4().hex}"
-            )
+            dal_request_id = f"{request.method.lower()}::{md5(request.path.lower().encode('utf-8')).hexdigest()}::{uuid.uuid4().hex}"
             setattr(request, "dal_request_id", dal_request_id)
 
-        AuditLogMiddleware.thread.__dal__ = RequestInformation(dal_request_id, request, response, exception)
+        AuditLogMiddleware.thread.__dal__ = RequestInformation(
+            dal_request_id, request, response, exception)
 
     @staticmethod
     def get_current_request_id():
@@ -88,7 +87,9 @@ class AuditLogMiddleware:
             else:
                 current_user_str = None
 
-            logger.info(f"{request.method} {request.path} {response.status_code} User:[{current_user_str}]")
+            logger.info(
+                f"{request.method} {request.path} {response.status_code} User:[{current_user_str}]"
+            )
             return response
         else:
             return self.get_response(request)

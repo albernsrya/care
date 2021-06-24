@@ -55,23 +55,33 @@ class TestFacilityUserApi(TestBase):
         user_id = response.json()["id"]
         user = User.objects.filter(id=user_id).first()
         self.assertIsNotNone(user)
-        self.assertDictEqual(response.json(), self.get_detail_representation(user))
+        self.assertDictEqual(response.json(),
+                             self.get_detail_representation(user))
 
         # Test for login
         password = response.json()["password"]
         self.client.login(username=data["username"], password=password)
         response = self.client.post(
-            f"/api/v1/auth/login/", data={"username": data["username"], "password": password}, format="json"
+            f"/api/v1/auth/login/",
+            data={
+                "username": data["username"],
+                "password": password
+            },
+            format="json",
         )
         self.assertEquals(response.status_code, status.HTTP_200_OK)
 
         # Test if user is added to the facility
         self.assertIn(user, self.facility.users.all())
-        response = self.client.get(f"/api/v1/facility/{self.facility.external_id}/")
+        response = self.client.get(
+            f"/api/v1/facility/{self.facility.external_id}/")
         self.assertEquals(response.status_code, status.HTTP_200_OK)
 
         self.assertEquals(
-            FacilityUser.objects.filter(facility=self.facility, user=user, created_by=self.user).count(), 1
+            FacilityUser.objects.filter(facility=self.facility,
+                                        user=user,
+                                        created_by=self.user).count(),
+            1,
         )
 
     def test_create_facility_user__should_succeed__when_lower_level(self):
@@ -84,19 +94,26 @@ class TestFacilityUserApi(TestBase):
         user_id = response.json()["id"]
         user = User.objects.filter(id=user_id).first()
         self.assertIsNotNone(user)
-        self.assertDictEqual(response.json(), self.get_detail_representation(user))
+        self.assertDictEqual(response.json(),
+                             self.get_detail_representation(user))
 
         # Test for login
         password = response.json()["password"]
         self.client.login(username=data["username"], password=password)
         response = self.client.post(
-            f"/api/v1/auth/login/", data={"username": data["username"], "password": password}, format="json"
+            f"/api/v1/auth/login/",
+            data={
+                "username": data["username"],
+                "password": password
+            },
+            format="json",
         )
         self.assertEquals(response.status_code, status.HTTP_200_OK)
 
         # Test if user is added to the facility
         self.assertIn(user, self.facility.users.all())
-        response = self.client.get(f"/api/v1/facility/{self.facility.external_id}/")
+        response = self.client.get(
+            f"/api/v1/facility/{self.facility.external_id}/")
         self.assertEquals(response.status_code, status.HTTP_200_OK)
 
     def test_create_facility_user__should_fail__when_higher_level(self):

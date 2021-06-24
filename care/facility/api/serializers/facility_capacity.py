@@ -6,7 +6,9 @@ from config.serializers import ChoiceField
 
 
 class FacilityCapacitySerializer(serializers.ModelSerializer):
-    room_type_text = ChoiceField(choices=ROOM_TYPES, read_only=True, source="room_type")
+    room_type_text = ChoiceField(choices=ROOM_TYPES,
+                                 read_only=True,
+                                 source="room_type")
     id = serializers.UUIDField(source="external_id", read_only=True)
 
     class Meta:
@@ -29,4 +31,4 @@ class FacilityCapacityHistorySerializer(serializers.ModelSerializer):
         super().__init__()
 
     class Meta:
-        exclude = TIMESTAMP_FIELDS + ("facility",)
+        exclude = TIMESTAMP_FIELDS + ("facility", )

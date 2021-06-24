@@ -1,7 +1,8 @@
 import glob
 import json
-from typing import Optional
 from collections import defaultdict
+from typing import Optional
+
 from django.core.management.base import BaseCommand, CommandParser
 
 from care.users.models import LOCAL_BODY_CHOICES, District, LocalBody, State
@@ -25,7 +26,8 @@ class Command(BaseCommand):
         local_bodies = []
 
         # Creates a map with first char of readable value as key
-        LOCAL_BODY_CHOICE_MAP = dict([(c[1][0], c[0]) for c in LOCAL_BODY_CHOICES])
+        LOCAL_BODY_CHOICE_MAP = dict([(c[1][0], c[0])
+                                      for c in LOCAL_BODY_CHOICES])
 
         state = {}
         district = defaultdict(dict)
@@ -46,7 +48,8 @@ class Command(BaseCommand):
             if state_name in district:
                 if district_name in district[state_name]:
                     return district[state_name][district_name]
-            district_obj = District.objects.filter(name=district_name, state=state_obj).first()
+            district_obj = District.objects.filter(name=district_name,
+                                                   state=state_obj).first()
             if not district_obj:
                 if not district_name:
                     return None
@@ -74,15 +77,16 @@ class Command(BaseCommand):
                         district=dist_obj,
                         localbody_code=lb.get("localbody_code"),
                         body_type=LOCAL_BODY_CHOICE_MAP.get(
-                            (lb.get("localbody_code", " "))[0], LOCAL_BODY_CHOICES[-1][0]
+                            (lb.get("localbody_code", " "))[0],
+                            LOCAL_BODY_CHOICES[-1][0],
                         ),
-                    )
-                )
+                    ))
 
             # Possible conflict is name uniqueness.
             # If there is a conflict, it means that the record already exists.
             # Hence, those records can be ignored using the `ignore_conflicts` flag
-            LocalBody.objects.bulk_create(local_body_objs, ignore_conflicts=True)
+            LocalBody.objects.bulk_create(local_body_objs,
+                                          ignore_conflicts=True)
 
         for f in glob.glob(f"{folder}/*.json"):
             counter += 1

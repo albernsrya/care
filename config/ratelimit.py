@@ -1,8 +1,6 @@
-from ratelimit.utils import is_ratelimited
-
-from django.conf import settings
-
 import requests
+from django.conf import settings
+from ratelimit.utils import is_ratelimited
 
 
 def validatecaptcha(request):
@@ -11,7 +9,8 @@ def validatecaptcha(request):
         "secret": settings.GOOGLE_RECAPTCHA_SECRET_KEY,
         "response": recaptcha_response,
     }
-    captcha_response = requests.post("https://www.google.com/recaptcha/api/siteverify", data=values)
+    captcha_response = requests.post(
+        "https://www.google.com/recaptcha/api/siteverify", data=values)
     result = captcha_response.json()
 
     if result["success"] is True:
@@ -28,7 +27,13 @@ def ratelimit(request, group="", keys=[None], increment=True):
         else:
             group = group + "-{}".format(key)
             key = settings.GETKEY
-        if is_ratelimited(request, group=group, key=key, rate=settings.DJANGO_RATE_LIMIT, increment=True,):
+        if is_ratelimited(
+                request,
+                group=group,
+                key=key,
+                rate=settings.DJANGO_RATE_LIMIT,
+                increment=True,
+        ):
             checkcaptcha = True
 
     if checkcaptcha:

@@ -22,7 +22,10 @@ class CaptchaRequiredException(AuthenticationFailed):
 class TokenObtainSerializer(serializers.Serializer):
     username_field = User.USERNAME_FIELD
 
-    default_error_messages = {"no_active_account": _("No active account found with the given credentials")}
+    default_error_messages = {
+        "no_active_account":
+        _("No active account found with the given credentials")
+    }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -39,9 +42,13 @@ class TokenObtainSerializer(serializers.Serializer):
             authenticate_kwargs["request"] = self.context["request"]
         except KeyError:
             pass
-        if ratelimit(self.context["request"], "login", [authenticate_kwargs[self.username_field]]):
+        if ratelimit(self.context["request"], "login",
+                     [authenticate_kwargs[self.username_field]]):
             raise CaptchaRequiredException(
-                detail={"status": 429, "detail": "Too Many Requests Provide Captcha"},
+                detail={
+                    "status": 429,
+                    "detail": "Too Many Requests Provide Captcha"
+                },
                 code=status.HTTP_429_TOO_MANY_REQUESTS,
             )
         self.user = authenticate(**authenticate_kwargs)
@@ -55,14 +62,17 @@ class TokenObtainSerializer(serializers.Serializer):
         # sensible backwards compatibility with older Django versions.
         if self.user is None or not self.user.is_active:
             raise AuthenticationFailed(
-                self.error_messages["no_active_account"], "no_active_account",
+                self.error_messages["no_active_account"],
+                "no_active_account",
             )
 
         return {}
 
     @classmethod
     def get_token(cls, user):
-        raise NotImplementedError("Must implement `get_token` method for `TokenObtainSerializer` subclasses")
+        raise NotImplementedError(
+            "Must implement `get_token` method for `TokenObtainSerializer` subclasses"
+        )
 
 
 class TokenRefreshSerializer(serializers.Serializer):
@@ -89,7 +99,8 @@ class TokenRefreshSerializer(serializers.Serializer):
             data["refresh"] = str(refresh)
 
         # Updating users active status
-        User.objects.filter(id=refresh["user_id"]).update(last_login=localtime(now()))
+        User.objects.filter(id=refresh["user_id"]).update(
+            last_login=localtime(now()))
 
         return data
 
@@ -106,7 +117,8 @@ class TokenObtainPairSerializer(TokenObtainSerializer):
         data["refresh"] = str(refresh)
         data["access"] = str(refresh.access_token)
 
-        User.objects.filter(id=self.user.id).update(last_login=localtime(now()))
+        User.objects.filter(id=self.user.id).update(
+            last_login=localtime(now()))
 
         return data
 

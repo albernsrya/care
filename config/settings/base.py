@@ -7,7 +7,8 @@ from datetime import timedelta
 
 import environ
 
-ROOT_DIR = environ.Path(__file__) - 3  # (care/config/settings/base.py - 3 = care/)
+ROOT_DIR = environ.Path(
+    __file__) - 3  # (care/config/settings/base.py - 3 = care/)
 APPS_DIR = ROOT_DIR.path("care")
 
 env = environ.Env()
@@ -97,7 +98,11 @@ THIRD_PARTY_APPS = [
     "django_rest_passwordreset",
 ]
 
-LOCAL_APPS = ["care.users.apps.UsersConfig", "care.facility", "care.audit_log.apps.AuditLogConfig"]
+LOCAL_APPS = [
+    "care.users.apps.UsersConfig",
+    "care.facility",
+    "care.audit_log.apps.AuditLogConfig",
+]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -135,10 +140,22 @@ PASSWORD_HASHERS = [
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {
+        "NAME":
+        "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
+    {
+        "NAME":
+        "django.contrib.auth.password_validation.MinimumLengthValidator"
+    },
+    {
+        "NAME":
+        "django.contrib.auth.password_validation.CommonPasswordValidator"
+    },
+    {
+        "NAME":
+        "django.contrib.auth.password_validation.NumericPasswordValidator"
+    },
 ]
 
 # MIDDLEWARE
@@ -193,34 +210,32 @@ MEDIA_ROOT = str(APPS_DIR("media"))
 # TEMPLATES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#templates
-TEMPLATES = [
-    {
-        # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-TEMPLATES-BACKEND
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        # https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
-        "DIRS": [str(APPS_DIR.path("templates"))],
-        "OPTIONS": {
-            # https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
-            # https://docs.djangoproject.com/en/dev/ref/templates/api/#loader-types
-            "loaders": [
-                "django.template.loaders.filesystem.Loader",
-                "django.template.loaders.app_directories.Loader",
-            ],
-            # https://docs.djangoproject.com/en/dev/ref/settings/#template-context-processors
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.template.context_processors.i18n",
-                "django.template.context_processors.media",
-                "django.template.context_processors.static",
-                "django.template.context_processors.tz",
-                "django.contrib.messages.context_processors.messages",
-                "care.utils.context_processors.settings_context",
-            ],
-        },
-    }
-]
+TEMPLATES = [{
+    # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-TEMPLATES-BACKEND
+    "BACKEND": "django.template.backends.django.DjangoTemplates",
+    # https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
+    "DIRS": [str(APPS_DIR.path("templates"))],
+    "OPTIONS": {
+        # https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
+        # https://docs.djangoproject.com/en/dev/ref/templates/api/#loader-types
+        "loaders": [
+            "django.template.loaders.filesystem.Loader",
+            "django.template.loaders.app_directories.Loader",
+        ],
+        # https://docs.djangoproject.com/en/dev/ref/settings/#template-context-processors
+        "context_processors": [
+            "django.template.context_processors.debug",
+            "django.template.context_processors.request",
+            "django.contrib.auth.context_processors.auth",
+            "django.template.context_processors.i18n",
+            "django.template.context_processors.media",
+            "django.template.context_processors.static",
+            "django.template.context_processors.tz",
+            "django.contrib.messages.context_processors.messages",
+            "care.utils.context_processors.settings_context",
+        ],
+    },
+}]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#form-renderer
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
@@ -231,7 +246,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 # FIXTURES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#fixture-dirs
-FIXTURE_DIRS = (str(APPS_DIR.path("fixtures")),)
+FIXTURE_DIRS = (str(APPS_DIR.path("fixtures")), )
 
 # SECURITY
 # ------------------------------------------------------------------------------
@@ -249,7 +264,8 @@ CSRF_TRUSTED_ORIGINS = json.loads(env("CSRF_TRUSTED_ORIGINS", default="[]"))
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-EMAIL_BACKEND = env("DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+EMAIL_BACKEND = env("DJANGO_EMAIL_BACKEND",
+                    default="django.core.mail.backends.smtp.EmailBackend")
 # https://docs.djangoproject.com/en/2.2/ref/settings/#email-timeout
 EMAIL_TIMEOUT = 5
 
@@ -271,15 +287,29 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {"format": "%(levelname)s %(asctime)s %(module)s " "%(process)d %(thread)d %(message)s"}
+        "verbose": {
+            "format":
+            "%(levelname)s %(asctime)s %(module)s "
+            "%(process)d %(thread)d %(message)s"
+        }
     },
-    "handlers": {"console": {"level": "DEBUG", "class": "logging.StreamHandler", "formatter": "verbose",}},
-    "root": {"level": "INFO", "handlers": ["console"]},
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        }
+    },
+    "root": {
+        "level": "INFO",
+        "handlers": ["console"]
+    },
 }
 
 # django-allauth
 # ------------------------------------------------------------------------------
-ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)
+ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION",
+                                      True)
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_AUTHENTICATION_METHOD = "username"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
@@ -303,14 +333,16 @@ REST_FRAMEWORK = {
         "config.authentication.CustomBasicAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
-    "PAGE_SIZE": 14,
-    "SEARCH_PARAM": "search_text",
+    "DEFAULT_PAGINATION_CLASS":
+    "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE":
+    14,
+    "SEARCH_PARAM":
+    "search_text",
 }
 
 # Your stuff...
 # ------------------------------------------------------------------------------
-
 
 ACCOUNT_EMAIL_VERIFICATION = False
 LOGOUT_REDIRECT_URL = "/"
@@ -318,9 +350,12 @@ STAFF_ACCOUNT_TYPE = 10
 
 # Simple JWT
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=env("JWT_ACCESS_TOKEN_LIFETIME", default=10)),
-    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=env("JWT_REFRESH_TOKEN_LIFETIME", default=30)),
-    "ROTATE_REFRESH_TOKENS": True,
+    "ACCESS_TOKEN_LIFETIME":
+    timedelta(minutes=env("JWT_ACCESS_TOKEN_LIFETIME", default=10)),
+    "REFRESH_TOKEN_LIFETIME":
+    timedelta(minutes=env("JWT_REFRESH_TOKEN_LIFETIME", default=30)),
+    "ROTATE_REFRESH_TOKENS":
+    True,
 }
 
 LOCATION_FIELD = {
@@ -352,7 +387,8 @@ if USE_TZ:
     # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-timezone
     CELERY_TIMEZONE = TIME_ZONE
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-broker_url
-CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://localhost:6379/0")
+CELERY_BROKER_URL = env("CELERY_BROKER_URL",
+                        default="redis://localhost:6379/0")
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-result_backend
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-accept_content
@@ -373,7 +409,8 @@ CELERY_TIMEZONE = "Asia/Kolkata"
 
 CSV_REQUEST_PARAMETER = "csv"
 
-DEFAULT_FROM_EMAIL = env("EMAIL_FROM", default="Coronasafe network <care@coronasafe.network>")
+DEFAULT_FROM_EMAIL = env(
+    "EMAIL_FROM", default="Coronasafe network <care@coronasafe.network>")
 
 CURRENT_DOMAIN = env("CURRENT_DOMAIN", default="localhost:8000")
 
@@ -391,7 +428,9 @@ IS_PRODUCTION = False
 
 OTP_REPEAT_WINDOW = 6  # Otps will only be valid for 6 hours to login
 
-OTP_MAX_REPEATS_WINDOW = 10  # can only send this many OTP's in current OTP_REPEAT_WINDOW
+OTP_MAX_REPEATS_WINDOW = (
+    10  # can only send this many OTP's in current OTP_REPEAT_WINDOW
+)
 
 OTP_LENGTH = 5
 
@@ -420,7 +459,6 @@ FILE_UPLOAD_BUCKET = env("FILE_UPLOAD_BUCKET", default="")
 FILE_UPLOAD_KEY = env("FILE_UPLOAD_KEY", default="")
 FILE_UPLOAD_SECRET = env("FILE_UPLOAD_SECRET", default="")
 
-
 # Audit logs
 AUDIT_LOG_ENABLED = env.bool("AUDIT_LOG_ENABLED", default=False)
 AUDIT_LOG = {
@@ -442,8 +480,14 @@ AUDIT_LOG = {
             "applications": [],
             "models": ["plain:facility.HistoricalPatientRegistration"],
             "fields": {
-                "facility.PatientRegistration": ["name", "phone_number", "emergency_phone_number", "address"],
-                "facility.PatientExternalTest": ["name", "address", "mobile_number"],
+                "facility.PatientRegistration": [
+                    "name",
+                    "phone_number",
+                    "emergency_phone_number",
+                    "address",
+                ],
+                "facility.PatientExternalTest":
+                ["name", "address", "mobile_number"],
             },
         }
     },

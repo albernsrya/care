@@ -1,15 +1,7 @@
 from django.urls import path
 
-from .views import (
-    DoctorCountCreation,
-    DoctorCountUpdation,
-    FacilitiesView,
-    FacilityCapacityCreation,
-    FacilityCapacityUpdation,
-    FacilityCreation,
-    FacilityUpdation,
-    FacilityView,
-)
+from .views import (DoctorCountCreation, DoctorCountUpdation, FacilitiesView, FacilityCapacityCreation,
+                    FacilityCapacityUpdation, FacilityCreation, FacilityUpdation, FacilityView)
 
 app_name = "facility"
 urlpatterns = [

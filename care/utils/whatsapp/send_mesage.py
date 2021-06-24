@@ -50,4 +50,3 @@ def sendWhatsappMessage(phone_numbers, message, notification_id, many=False):
             continue
         _send(phone, message, notification_id)
     return True
-

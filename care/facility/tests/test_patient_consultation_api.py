@@ -21,15 +21,22 @@ class TestPatientConsultationApi(TestBase):
                 "name": facility.district.name,
                 "state": facility.state.id,
             },
-            "state_object": {"id": facility.state.id, "name": facility.state.name},
-            "facility_type": {"id": facility.facility_type, "name": dict(FACILITY_TYPES)[facility.facility_type],},
+            "state_object": {
+                "id": facility.state.id,
+                "name": facility.state.name
+            },
+            "facility_type": {
+                "id": facility.facility_type,
+                "name": dict(FACILITY_TYPES)[facility.facility_type],
+            },
         }
 
     def get_list_representation(self, obj) -> dict:
         referred_to_object = None
         referred_to = obj.referred_to
         if referred_to:
-            referred_to_object = self.get_list_representation_facility(referred_to)
+            referred_to_object = self.get_list_representation_facility(
+                referred_to)
             referred_to = str(obj.referred_to.external_id)
         return {
             "id": str(obj.external_id),
@@ -66,7 +73,9 @@ class TestPatientConsultationApi(TestBase):
     def get_detail_representation(self, obj=None) -> dict:
         list_repr = self.get_list_representation(obj)
         detail_repr = list_repr.copy()
-        detail_repr.update({})  # no changes in list repr and detail repr, if there are only those may be updated here.
+        detail_repr.update(
+            {}
+        )  # no changes in list repr and detail repr, if there are only those may be updated here.
         return detail_repr
 
     def test_list__should_order_in_desc_order(self):
@@ -77,10 +86,16 @@ class TestPatientConsultationApi(TestBase):
         self.assertEqual(
             response.json(),
             {
-                "count": 2,
-                "next": None,
-                "previous": None,
-                "results": [self.get_list_representation(consultation_2), self.get_list_representation(consultation_1)],
+                "count":
+                2,
+                "next":
+                None,
+                "previous":
+                None,
+                "results": [
+                    self.get_list_representation(consultation_2),
+                    self.get_list_representation(consultation_1),
+                ],
             },
         )
 
@@ -88,10 +103,12 @@ class TestPatientConsultationApi(TestBase):
         consultation = self.create_consultation()
         response = self.client.get(self.get_url(str(consultation.external_id)))
         self.assertEquals(response.status_code, status.HTTP_200_OK)
-        self.assertEquals(response.json(), self.get_detail_representation(consultation))
+        self.assertEquals(response.json(),
+                          self.get_detail_representation(consultation))
 
     def test_detail_api_with_referred_to(self):
         consultation = self.create_consultation(referred_to=self.facility)
         response = self.client.get(self.get_url(str(consultation.external_id)))
         self.assertEquals(response.status_code, status.HTTP_200_OK)
-        self.assertEquals(response.json(), self.get_detail_representation(consultation))
+        self.assertEquals(response.json(),
+                          self.get_detail_representation(consultation))

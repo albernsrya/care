@@ -8,11 +8,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.views import View
 
-from .forms import (
-    DoctorsCountCreationForm,
-    FacilityCapacityCreationForm,
-    FacilityCreationForm,
-)
+from .forms import DoctorsCountCreationForm, FacilityCapacityCreationForm, FacilityCreationForm
 from .models import Facility, FacilityCapacity, HospitalDoctors
 
 
@@ -45,11 +41,16 @@ class FacilityView(LoginRequiredMixin, StaffRequiredMixin, View):
             current_user = request.user
             facility_obj = Facility.objects.get(id=pk, created_by=current_user)
             capacities = FacilityCapacity.objects.filter(facility=facility_obj)
-            doctor_counts = HospitalDoctors.objects.filter(facility=facility_obj)
+            doctor_counts = HospitalDoctors.objects.filter(
+                facility=facility_obj)
             return render(
                 request,
                 self.template,
-                {"capacities": capacities, "doctor_counts": doctor_counts, "facility": facility_obj,},
+                {
+                    "capacities": capacities,
+                    "doctor_counts": doctor_counts,
+                    "facility": facility_obj,
+                },
             )
         except Exception as e:
             logging.error(e)
@@ -77,7 +78,8 @@ class FacilityCreation(LoginRequiredMixin, StaffRequiredMixin, View):
                 facility_obj.created_by = request.user
                 facility_obj.facility_type = 2
                 facility_obj.save()
-                return redirect("facility:facility-capacity-create", facility_obj.id)
+                return redirect("facility:facility-capacity-create",
+                                facility_obj.id)
             return render(request, self.template, {"form": form})
         except Exception as e:
             logging.error(e)
@@ -122,7 +124,10 @@ class FacilityCapacityCreation(LoginRequiredMixin, StaffRequiredMixin, View):
             form = self.form_class()
             current_user = request.user
             facility_obj = Facility.objects.get(id=pk, created_by=current_user)
-            return render(request, self.template, {"form": form, "facility": facility_obj})
+            return render(request, self.template, {
+                "form": form,
+                "facility": facility_obj
+            })
         except Exception as e:
             logging.error(e)
             return HttpResponseRedirect("/500")
@@ -135,7 +140,9 @@ class FacilityCapacityCreation(LoginRequiredMixin, StaffRequiredMixin, View):
             validation_error = False
             duplicate = False
             if form.is_valid():
-                if form.cleaned_data.get("total_capacity") >= form.cleaned_data.get("current_capacity"):
+                if form.cleaned_data.get(
+                        "total_capacity") >= form.cleaned_data.get(
+                            "current_capacity"):
                     duplicate = False
                     facility_capacity_obj = form.save(commit=False)
                     facility_obj = Facility.objects.get(id=pk)
@@ -143,9 +150,13 @@ class FacilityCapacityCreation(LoginRequiredMixin, StaffRequiredMixin, View):
                     try:
                         facility_capacity_obj.save()
                         if "addmore" in data:
-                            return redirect("facility:facility-capacity-create", facility_obj.id)
+                            return redirect(
+                                "facility:facility-capacity-create",
+                                facility_obj.id)
                         else:
-                            return redirect("facility:facility-doctor-count-create", facility_obj.id)
+                            return redirect(
+                                "facility:facility-doctor-count-create",
+                                facility_obj.id)
                     except IntegrityError:
                         duplicate = True
                 else:
@@ -153,7 +164,12 @@ class FacilityCapacityCreation(LoginRequiredMixin, StaffRequiredMixin, View):
             return render(
                 request,
                 self.template,
-                {"form": form, "facility": facility_obj, "duplicate": duplicate, "validation_error": validation_error},
+                {
+                    "form": form,
+                    "facility": facility_obj,
+                    "duplicate": duplicate,
+                    "validation_error": validation_error,
+                },
             )
         except Exception as e:
             logging.error(e)
@@ -167,10 +183,15 @@ class FacilityCapacityUpdation(LoginRequiredMixin, StaffRequiredMixin, View):
     def get(self, request, fpk, cpk):
         try:
             current_user = request.user
-            facility_obj = Facility.objects.get(id=fpk, created_by=current_user)
-            capacity_obj = FacilityCapacity.objects.get(id=cpk, facility=facility_obj)
+            facility_obj = Facility.objects.get(id=fpk,
+                                                created_by=current_user)
+            capacity_obj = FacilityCapacity.objects.get(id=cpk,
+                                                        facility=facility_obj)
             form = self.form_class(instance=capacity_obj)
-            return render(request, self.template, {"form": form, "facility": facility_obj})
+            return render(request, self.template, {
+                "form": form,
+                "facility": facility_obj
+            })
         except Exception as e:
             logging.error(e)
             return HttpResponseRedirect("/500")
@@ -179,16 +200,21 @@ class FacilityCapacityUpdation(LoginRequiredMixin, StaffRequiredMixin, View):
         try:
             data = request.POST
             current_user = request.user
-            facility_obj = Facility.objects.get(id=fpk, created_by=current_user)
-            capacity_obj = FacilityCapacity.objects.get(id=cpk, facility=facility_obj)
+            facility_obj = Facility.objects.get(id=fpk,
+                                                created_by=current_user)
+            capacity_obj = FacilityCapacity.objects.get(id=cpk,
+                                                        facility=facility_obj)
             form = self.form_class(data, instance=capacity_obj)
             duplicate = False
             validation_error = False
             if form.is_valid():
-                if form.cleaned_data.get("total_capacity") >= form.cleaned_data.get("current_capacity"):
+                if form.cleaned_data.get(
+                        "total_capacity") >= form.cleaned_data.get(
+                            "current_capacity"):
                     try:
                         form.save()
-                        return redirect("facility:facility-view", facility_obj.id)
+                        return redirect("facility:facility-view",
+                                        facility_obj.id)
                     except IntegrityError:
                         duplicate = True
                 else:
@@ -196,7 +222,12 @@ class FacilityCapacityUpdation(LoginRequiredMixin, StaffRequiredMixin, View):
             return render(
                 request,
                 self.template,
-                {"form": form, "duplicate": duplicate, "validation_error": validation_error, "facility": facility_obj},
+                {
+                    "form": form,
+                    "duplicate": duplicate,
+                    "validation_error": validation_error,
+                    "facility": facility_obj,
+                },
             )
         except Exception as e:
             logging.error(e)
@@ -212,7 +243,10 @@ class DoctorCountCreation(LoginRequiredMixin, StaffRequiredMixin, View):
             form = self.form_class()
             current_user = request.user
             facility_obj = Facility.objects.get(id=pk, created_by=current_user)
-            return render(request, self.template, {"form": form, "facility": facility_obj})
+            return render(request, self.template, {
+                "form": form,
+                "facility": facility_obj
+            })
         except Exception as e:
             logging.error(e)
             return HttpResponseRedirect("/500")
@@ -229,12 +263,23 @@ class DoctorCountCreation(LoginRequiredMixin, StaffRequiredMixin, View):
                 try:
                     facility_capacity_obj.save()
                     if "addmore" in data:
-                        return redirect("facility:facility-doctor-count-create", facility_obj.id)
+                        return redirect(
+                            "facility:facility-doctor-count-create",
+                            facility_obj.id)
                     else:
-                        return redirect("facility:facility-view", facility_obj.id)
+                        return redirect("facility:facility-view",
+                                        facility_obj.id)
                 except IntegrityError:
                     duplicate = True
-            return render(request, self.template, {"form": form, "facility": facility_obj, "duplicate": duplicate},)
+            return render(
+                request,
+                self.template,
+                {
+                    "form": form,
+                    "facility": facility_obj,
+                    "duplicate": duplicate
+                },
+            )
         except Exception as e:
             logging.error(e)
             return HttpResponseRedirect("/500")
@@ -247,10 +292,15 @@ class DoctorCountUpdation(LoginRequiredMixin, StaffRequiredMixin, View):
     def get(self, request, fpk, cpk):
         try:
             current_user = request.user
-            facility_obj = Facility.objects.get(id=fpk, created_by=current_user)
-            doctor_count_obj = HospitalDoctors.objects.get(id=cpk, facility=facility_obj)
+            facility_obj = Facility.objects.get(id=fpk,
+                                                created_by=current_user)
+            doctor_count_obj = HospitalDoctors.objects.get(
+                id=cpk, facility=facility_obj)
             form = self.form_class(instance=doctor_count_obj)
-            return render(request, self.template, {"form": form, "facility": facility_obj})
+            return render(request, self.template, {
+                "form": form,
+                "facility": facility_obj
+            })
         except Exception as e:
             logging.error(e)
             return HttpResponseRedirect("/500")
@@ -259,8 +309,10 @@ class DoctorCountUpdation(LoginRequiredMixin, StaffRequiredMixin, View):
         try:
             data = request.POST
             current_user = request.user
-            facility_obj = Facility.objects.get(id=fpk, created_by=current_user)
-            doctor_count_obj = HospitalDoctors.objects.get(id=cpk, facility=facility_obj)
+            facility_obj = Facility.objects.get(id=fpk,
+                                                created_by=current_user)
+            doctor_count_obj = HospitalDoctors.objects.get(
+                id=cpk, facility=facility_obj)
             form = self.form_class(data, instance=doctor_count_obj)
             duplicate = False
             if form.is_valid():
@@ -269,7 +321,10 @@ class DoctorCountUpdation(LoginRequiredMixin, StaffRequiredMixin, View):
                     return redirect("facility:facility-view", facility_obj.id)
                 except IntegrityError:
                     duplicate = True
-            return render(request, self.template, {"form": form, "duplicate": duplicate})
+            return render(request, self.template, {
+                "form": form,
+                "duplicate": duplicate
+            })
         except Exception as e:
             logging.error(e)
             return HttpResponseRedirect("/500")
